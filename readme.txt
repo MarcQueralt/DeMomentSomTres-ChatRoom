@@ -13,6 +13,8 @@ The DeMomentSomTres-ChatRoom uses OpenTok to provide online conferencing and web
 
 **Features include:**
 
+Video Chat using Video Embed functionality.
+
 **How is this being used?**
 
 
@@ -24,7 +26,6 @@ You can download and install the DeMomentSomTres-ChatRoom using the built in Wor
 
 Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in the "Plugins" admin panel using the "Activate" link.
 
-
 == Frequently Asked Questions ==
 
 
@@ -35,5 +36,6 @@ Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in
 
 = 1.0.0 =
 * [New] Initial Release
+* [New] Video Chat using Video Embed functionality.
 
 == Upgrade Notice ==
