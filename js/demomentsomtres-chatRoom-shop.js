@@ -7,7 +7,6 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
         + "Please upgrade to the latest version of Flash.");
 } else {
     session = TB.initSession(sessionId);	// Initialize session
-
     // Add event listeners to the session
     session.addEventListener('sessionConnected', sessionConnectedHandler);
     session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
@@ -15,4 +14,9 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
     session.addEventListener('streamCreated', streamCreatedHandler);
     session.addEventListener('streamDestroyed', streamDestroyedHandler);
+    hide('connectLink');
+    hide('disconnectLink');
+    hide('publishLink');
+    hide('unpublishLink');
+    connect();
 }

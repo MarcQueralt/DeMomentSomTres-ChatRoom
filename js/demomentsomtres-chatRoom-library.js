@@ -5,11 +5,6 @@
 //  LINK CLICK HANDLERS
 //--------------------------------------
 
-/*
-If testing the app from the desktop, be sure to check the Flash Player Global Security setting
-to allow the page from communicating with SWF content loaded from the web. For more information,
-see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
-*/
 function connect() {
     session.connect(apiKey, token);
 }
@@ -24,13 +19,12 @@ function disconnect() {
 // Called when user wants to start publishing to the session
 function startPublishing() {
     if (!publisher) {
-        var parentDiv = document.getElementById("myCamera");
         var publisherDiv = document.createElement('div'); // Create a div for the publisher to replace
         publisherDiv.setAttribute('id', 'opentok_publisher');
         parentDiv.appendChild(publisherDiv);
         var publisherProps = {
             width: VIDEO_WIDTH, 
-            height: VIDEO_HEIGHT
+            height: VIDEO_HEIGHT,
         };
         publisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
         session.publish(publisher);
