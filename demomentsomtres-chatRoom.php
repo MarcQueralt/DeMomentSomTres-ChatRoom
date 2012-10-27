@@ -50,10 +50,9 @@ add_action('wp_footer', 'dmst_chatroom_printScript');
 
 function dmst_chatroom_registerScript() {
     wp_register_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
-    wp_register_script('dmst-chatroom-library', plugins_url('js/demomentsomtres-chatRoom-library.js', __FILE__), array('opentok'), '1.0.1', true);
-    wp_register_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok','dmst-chatroom-library'), '1.0.1', true);
-    wp_register_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok', 'dmst-chatroom-library'), '1.0.1', true);
-    wp_register_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok', 'dmst-chatroom-library'), '1.0.1', true);
+    wp_register_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
+    wp_register_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok'), '1.0.1', true);
+    wp_register_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok'), '1.0.1', true);
 }
 
 function dmst_chatroom_printScript() {
@@ -64,7 +63,6 @@ function dmst_chatroom_printScript() {
         return;
 
     wp_print_scripts('opentok');
-    wp_print_scripts('dmst-chatroom-library');
     if (dmst_chatRoom_debug_mode()):
         wp_print_scripts('dmst-chatroom-debug');
     endif;
