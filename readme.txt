@@ -34,6 +34,10 @@ Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in
 
 == Changelog ==
 
+= 1.0.1 =
+* [New] Using OpenTok API
+* [Remove] Video Embed functionality
+
 = 1.0.0 =
 * [New] Initial Release
 * [New] Video Chat using Video Embed functionality.
