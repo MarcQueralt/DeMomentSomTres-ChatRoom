@@ -44,43 +44,14 @@ if (!function_exists('add_action')) {
     exit;
 }
 
-if (!is_admin()) add_action("wp_enqueue_scripts", "dmst_chatRoom_enqueue_jquery", 11);
+if (!is_admin())
+    add_action("wp_enqueue_scripts", "dmst_chatRoom_enqueue_jquery", 11);
+
 function dmst_chatRoom_enqueue_jquery() {
-   wp_enqueue_script('jquery');
+    wp_enqueue_script('jquery');
 }
 
 load_plugin_textdomain(DMST_CHATROOM_TEXT_DOMAIN, false, DMST_CHATROOM_PLUGIN_URL . '/languages');
-add_action('init', 'dmst_chatroom_registerScript');
-add_action('wp_footer', 'dmst_chatroom_printScript');
-
-function dmst_chatroom_registerScript() {
-    wp_register_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
-    wp_register_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
-    wp_register_script('dmst-chatroom-css',plugins_url('js/demomentsomtres-chatRoom-css.js',__FILE__),array(),'1.0.1',true);
-    wp_register_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok'), '1.0.1', true);
-    wp_register_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok'), '1.0.1', true);
-//    wp_register_style('dmst-chatroom-style',plugins_url('demomentsomtres-chatRoom.css',__FILE__),array(),'1.0.1','all');
-}
-
-function dmst_chatroom_printScript() {
-    global $dmst_chatroom_addscripts;
-    global $dmst_chatroom_isModerator;
-
-    if (!$dmst_chatroom_addscripts)
-        return;
-
-    wp_print_scripts('opentok');
-    wp_print_scripts('dmst-chatroom-css');
-    if (dmst_chatRoom_debug_mode()):
-        wp_print_scripts('dmst-chatroom-debug');
-    endif;
-    if ($dmst_chatroom_isModerator):
-        wp_print_scripts('dmst-chatroom-shop');
-    else:
-        wp_print_scripts('dmst-chatroom-client');
-    endif;
-    wp_print_styles('dmst-chatroom-style');
-}
 
 /**
  * Register shortcode: [DeMomentSomTresChatRoom]
@@ -93,8 +64,6 @@ add_shortcode('DeMomentSomTresChatRoom', 'DMST_ChatRoom_sc');
  * @since 1.0.0
  */
 function DMST_ChatRoom_sc() {
-    global $dmst_chatroom_addscripts;
-    global $dmst_chatroom_isModerator;
 
     require_once 'SDK/OpenTokSDK.php';
 
@@ -120,11 +89,16 @@ function DMST_ChatRoom_sc() {
         set_transient(DMST_CHATROOM_PRIVATE_SESSIONS, $sessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
     endif;
 
+    wp_enqueue_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
+    wp_enqueue_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
+    wp_enqueue_script('dmst-chatroom-css', plugins_url('js/demomentsomtres-chatRoom-css.js', __FILE__), array(), '1.0.1', true);
     $dmst_chatroom_isModerator = (current_user_can('manage_options'));
     if ($dmst_chatroom_isModerator):
         $role = RoleConstants::MODERATOR;
+        wp_enqueue_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok'), '1.0.1', true);
     else:
         $role = RoleConstants::SUBSCRIBER;
+        wp_register_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok'), '1.0.1', true);
     endif;
     $connection_data = '';
     $token = $apiObj->generateToken($sessionId, $role, NULL, $connection_data);
@@ -142,8 +116,8 @@ function DMST_ChatRoom_sc() {
     $cos.='var subscribers = {};';
     $cos.='var VIDEO_WIDTH = 320;';
     $cos.='var VIDEO_HEIGHT = 240;';
-    $cos.='var VIDEO_BACKGROUND = "'.'http://t2.gstatic.com/images?q=tbn:ANd9GcQp7U_QQbwOuEQ9QwnrG5K4oyUVPlaLrf4BkkH2L9_axlHB-VTk'.'";';
-    $cos.='var CSS_FILE="'.plugins_url('demomentsomtres-chatRoom.css',__FILE__).'"';
+    $cos.='var VIDEO_BACKGROUND = "' . 'http://t2.gstatic.com/images?q=tbn:ANd9GcQp7U_QQbwOuEQ9QwnrG5K4oyUVPlaLrf4BkkH2L9_axlHB-VTk' . '";';
+    $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '"';
     $cos.='</script>';
     if ($dmst_chatroom_isModerator):
         $cos.='<div id="links">';
@@ -161,6 +135,5 @@ function DMST_ChatRoom_sc() {
 
     return $cos;
 }
-
 
 ?>
