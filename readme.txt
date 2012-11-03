@@ -1,6 +1,6 @@
 === DeMomentSomTres-ChatRoom ===
-Contributors: marcqueralt
-Tags: video, chat, widget, plugin, live, live video, google hangouts, hangouts, discussion, videochat, video chat, video conference, free, webcam, video broadcast, social networking, community, networks, talk show, TokBox, OpenTok, WordPress
+Contributors: marcqueralt 
+Tags: video, chat, widget, plugin, live, live video, google hangouts, hangouts, discussion, videochat, video chat, video conference, free, webcam, video broadcast, social networking, community, networks, talk show, TokBox, OpenTok, chatroom
 Requires at least: 3.0
 Tested up to: 3.4
 Stable tag: 1.0.0
