@@ -27,11 +27,10 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
 //  LINK CLICK HANDLERS
 //--------------------------------------
 
-/*
-		If testing the app from the desktop, be sure to check the Flash Player Global Security setting
-		to allow the page from communicating with SWF content loaded from the web. For more information,
-		see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
-		*/
+/* If testing the app from the desktop, be sure to check the Flash Player Global Security setting
+ * to allow the page from communicating with SWF content loaded from the web. For more information,
+ * see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
+ */
 function connect() {
     session.connect(apiKey, token);
 }
@@ -80,9 +79,11 @@ function sessionConnectedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         addStream(event.streams[i]);
     }
-    show('disconnectLink');
-    show('publishLink');
-    hide('connectLink');
+    if(0==event.streams.length) {
+        jQuery("#subscribers").addClass("dmst_chatRoom_shop_standby");
+    } else {
+        jQuery("#subscribers").removeClass("dmst_chatRoom_shop_standby");
+    }
 }
 
 function streamCreatedHandler(event) {
@@ -90,6 +91,7 @@ function streamCreatedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         addStream(event.streams[i]);
     }
+    jQuery("#subscribers").removeClass("dmst_chatRoom_shop_standby");
 }
 
 function streamDestroyedHandler(event) {
@@ -101,11 +103,6 @@ function sessionDisconnectedHandler(event) {
     // This signals that the user was disconnected from the Session. Any subscribers and publishers
     // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
     publisher = null;
-
-    show('connectLink');
-    hide('disconnectLink');
-    hide('publishLink');
-    hide('unpublishLink');
 }
 
 function connectionDestroyedHandler(event) {
@@ -116,17 +113,16 @@ function connectionCreatedHandler(event) {
 // This signals new connections have been created.
 }
 
-/*
-		If you un-comment the call to TB.addEventListener("exception", exceptionHandler) above, OpenTok calls the
-		exceptionHandler() method when exception events occur. You can modify this method to further process exception events.
-		If you un-comment the call to TB.setLogLevel(), above, OpenTok automatically displays exception event messages.
-		*/
+/* If you un-comment the call to TB.addEventListener("exception", exceptionHandler) above, OpenTok calls the
+ * exceptionHandler() method when exception events occur. You can modify this method to further process exception events.
+ * If you un-comment the call to TB.setLogLevel(), above, OpenTok automatically displays exception event messages.
+ */
 function exceptionHandler(event) {
     if (event.code == 1013) {
         document.body.innerHTML = "This page is trying to connect a third client to an OpenTok peer-to-peer session. "
     + "Only two clients can connect to peer-to-peer sessions.";
     } else {
-        alert("Exception: " + event.code + "::" + event.message);
+    //        alert("Exception: " + event.code + "::" + event.message);
     }
 }
 

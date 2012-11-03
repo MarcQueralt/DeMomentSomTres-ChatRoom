@@ -44,6 +44,11 @@ if (!function_exists('add_action')) {
     exit;
 }
 
+if (!is_admin()) add_action("wp_enqueue_scripts", "dmst_chatRoom_enqueue_jquery", 11);
+function dmst_chatRoom_enqueue_jquery() {
+   wp_enqueue_script('jquery');
+}
+
 load_plugin_textdomain(DMST_CHATROOM_TEXT_DOMAIN, false, DMST_CHATROOM_PLUGIN_URL . '/languages');
 add_action('init', 'dmst_chatroom_registerScript');
 add_action('wp_footer', 'dmst_chatroom_printScript');
@@ -51,8 +56,10 @@ add_action('wp_footer', 'dmst_chatroom_printScript');
 function dmst_chatroom_registerScript() {
     wp_register_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
     wp_register_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
+    wp_register_script('dmst-chatroom-css',plugins_url('js/demomentsomtres-chatRoom-css.js',__FILE__),array(),'1.0.1',true);
     wp_register_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok'), '1.0.1', true);
     wp_register_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok'), '1.0.1', true);
+//    wp_register_style('dmst-chatroom-style',plugins_url('demomentsomtres-chatRoom.css',__FILE__),array(),'1.0.1','all');
 }
 
 function dmst_chatroom_printScript() {
@@ -63,6 +70,7 @@ function dmst_chatroom_printScript() {
         return;
 
     wp_print_scripts('opentok');
+    wp_print_scripts('dmst-chatroom-css');
     if (dmst_chatRoom_debug_mode()):
         wp_print_scripts('dmst-chatroom-debug');
     endif;
@@ -71,6 +79,7 @@ function dmst_chatroom_printScript() {
     else:
         wp_print_scripts('dmst-chatroom-client');
     endif;
+    wp_print_styles('dmst-chatroom-style');
 }
 
 /**
@@ -134,6 +143,7 @@ function DMST_ChatRoom_sc() {
     $cos.='var VIDEO_WIDTH = 320;';
     $cos.='var VIDEO_HEIGHT = 240;';
     $cos.='var VIDEO_BACKGROUND = "'.'http://t2.gstatic.com/images?q=tbn:ANd9GcQp7U_QQbwOuEQ9QwnrG5K4oyUVPlaLrf4BkkH2L9_axlHB-VTk'.'";';
+    $cos.='var CSS_FILE="'.plugins_url('demomentsomtres-chatRoom.css',__FILE__).'"';
     $cos.='</script>';
     if ($dmst_chatroom_isModerator):
         $cos.='<div id="links">';
@@ -151,5 +161,6 @@ function DMST_ChatRoom_sc() {
 
     return $cos;
 }
+
 
 ?>

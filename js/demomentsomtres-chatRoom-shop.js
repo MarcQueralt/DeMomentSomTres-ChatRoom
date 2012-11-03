@@ -22,11 +22,10 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
 //  LINK CLICK HANDLERS
 //--------------------------------------
 
-/*
-		If testing the app from the desktop, be sure to check the Flash Player Global Security setting
-		to allow the page from communicating with SWF content loaded from the web. For more information,
-		see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
-		*/
+/* If testing the app from the desktop, be sure to check the Flash Player Global Security setting
+ * to allow the page from communicating with SWF content loaded from the web. For more information,
+ * see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
+ */
 function connect() {
     session.connect(apiKey, token);
 }
