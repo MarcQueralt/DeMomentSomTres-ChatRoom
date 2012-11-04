@@ -3,12 +3,15 @@
     border:1px solid #111;
     min-height:100px;
 }
-.dmst_chatRoom_shop_closed {
+#myCamera {
+    min-height: 100px;
+}
+.dmst_chatRoom_closed {
     background-color: red;
 }
-.dmst_chatRoom_shop_open {
+.dmst_chatRoom_open {
     background-color: green;
 }
-.dmst_chatRoom_shop_standby {
+.dmst_chatRoom_standby {
     background-color: orange;
 }

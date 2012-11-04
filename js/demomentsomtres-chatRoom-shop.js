@@ -1,6 +1,7 @@
 // Script adapted by DeMomentSomTres
 // for WordPress plugin demomentsomtres-chatRoom.
 // more info http://demomentsomtres.com
+
 TB.addEventListener("exception", exceptionHandler);		
 if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     alert("You don't have the minimum requirements to run this application."
@@ -15,9 +16,23 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
     session.addEventListener('streamCreated', streamCreatedHandler);
     session.addEventListener('streamDestroyed', streamDestroyedHandler);
-    show('connectLink');
+    jQuery('#connectLink').show();
+    jQuery('#disconnectLink').hide();
+    jQuery('#publishLink').hide();
+    jQuery('#unpublishLink').hide();
+    jQuery('#connectLink').click(function(){
+        connect()
+    });
+    jQuery('#disconnectLink').click(function(){
+        disconnect()
+    });
+    jQuery('#publishLink').click(function(){
+        startPublishing()
+    });
+    jQuery('#unpublishLink').click(function(){
+        stopPublishing()
+    });
 }
-
 //--------------------------------------
 //  LINK CLICK HANDLERS
 //--------------------------------------
@@ -27,14 +42,46 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
  * see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
  */
 function connect() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_open',
+        success: function(data){
+            jQuery('#messages').html(data);
+        },
+        error: function(data){
+            jQuery('#messages').html(data);
+        }
+    };
+    jQuery.ajax(dataToSend);
+    jQuery('#myCamera').addClass('dmst_chatRoom_standby');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_closed');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_open');
     session.connect(apiKey, token);
 }
-
 function disconnect() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_close',
+        success: function(data){
+            jQuery('#messages').html(data);
+        },
+        error: function(data){
+            jQuery('#messages').html(data);
+        }
+    };
+    jQuery.ajax(dataToSend);
+    jQuery('#myCamera').addClass('dmst_chatRoom_closed');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_standby');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_open');
     session.disconnect();
-    hide('disconnectLink');
-    hide('publishLink');
-    hide('unpublishLink');
+    jQuery('#disconnectLink').hide();
+    jQuery('#publishLink').hide();
+    jQuery('#unpublishLink').hide();
+    jQuery('#connectLink').show();
 }
 
 // Called when user wants to start publishing to the session
@@ -50,8 +97,11 @@ function startPublishing() {
         };
         publisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
         session.publish(publisher);
-        show('unpublishLink');
-        hide('publishLink');
+        jQuery('#myCamera').addClass('dmst_chatRoom_open');
+        jQuery('#myCamera').removeClass('dmst_chatRoom_standby');
+        jQuery('#myCamera').removeClass('dmst_chatRoom_closed');
+        jQuery('#unpublishLink').show();
+        jQuery('#publishLink').hide();
     }
 }
 
@@ -60,9 +110,11 @@ function stopPublishing() {
         session.unpublish(publisher);
     }
     publisher = null;
-
-    show('publishLink');
-    hide('unpublishLink');
+    jQuery('#myCamera').addClass('dmst_chatRoom_standby');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_open');
+    jQuery('#myCamera').removeClass('dmst_chatRoom_closed');
+    jQuery('#publishLink').show();
+    jQuery('#unpublishLink').hide();
 }
 
 //--------------------------------------
@@ -74,9 +126,9 @@ function sessionConnectedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         addStream(event.streams[i]);
     }
-    show('disconnectLink');
-    show('publishLink');
-    hide('connectLink');
+    jQuery('#disconnectLink').show();
+    jQuery('#publishLink').show();
+    jQuery('#connectLink').hide();
 }
 
 function streamCreatedHandler(event) {
@@ -96,10 +148,10 @@ function sessionDisconnectedHandler(event) {
     // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
     publisher = null;
 
-    show('connectLink');
-    hide('disconnectLink');
-    hide('publishLink');
-    hide('unpublishLink');
+    jQuery('#connectLink').show();
+    jQuery('disconnectLink').hide();
+    jQuery('publishLink').hide();
+    jQuery('unpublishLink').hide();
 }
 
 function connectionDestroyedHandler(event) {
@@ -141,12 +193,4 @@ function addStream(stream) {
         height: VIDEO_HEIGHT
     };
     subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, subscriberProps);
-}
-
-function show(id) {
-    document.getElementById(id).style.display = 'block';
-}
-
-function hide(id) {
-    document.getElementById(id).style.display = 'none';
 }

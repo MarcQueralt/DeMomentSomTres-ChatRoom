@@ -35,41 +35,6 @@ function connect() {
     session.connect(apiKey, token);
 }
 
-function disconnect() {
-    session.disconnect();
-    hide('disconnectLink');
-    hide('publishLink');
-    hide('unpublishLink');
-}
-
-// Called when user wants to start publishing to the session
-function startPublishing() {
-    if (!publisher) {
-        var parentDiv = document.getElementById("myCamera");
-        var publisherDiv = document.createElement('div'); // Create a div for the publisher to replace
-        publisherDiv.setAttribute('id', 'opentok_publisher');
-        parentDiv.appendChild(publisherDiv);
-        var publisherProps = {
-            width: VIDEO_WIDTH, 
-            height: VIDEO_HEIGHT
-        };
-        publisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
-        session.publish(publisher);
-        show('unpublishLink');
-        hide('publishLink');
-    }
-}
-
-function stopPublishing() {
-    if (publisher) {
-        session.unpublish(publisher);
-    }
-    publisher = null;
-
-    show('publishLink');
-    hide('unpublishLink');
-}
-
 //--------------------------------------
 //  OPENTOK EVENT HANDLERS
 //--------------------------------------
@@ -80,9 +45,11 @@ function sessionConnectedHandler(event) {
         addStream(event.streams[i]);
     }
     if(0==event.streams.length) {
-        jQuery("#subscribers").addClass("dmst_chatRoom_shop_standby");
+        jQuery("#subscribers").addClass("dmst_chatRoom_standby");
     } else {
-        jQuery("#subscribers").removeClass("dmst_chatRoom_shop_standby");
+        jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
+        jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
+        jQuery("#subscribers").addClass("dmst_chatRoom_open");
     }
 }
 
@@ -91,22 +58,33 @@ function streamCreatedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         addStream(event.streams[i]);
     }
-    jQuery("#subscribers").removeClass("dmst_chatRoom_shop_standby");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
+    jQuery("#subscribers").addClass("dmst_chatRoom_open");
 }
 
 function streamDestroyedHandler(event) {
-// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
-// This default behaviour can be prevented using event.preventDefault()
+    // This signals that a stream was destroyed. Any Subscribers will automatically be removed.
+    // This default behaviour can be prevented using event.preventDefault()
+    jQuery("#subscribers").addClass("dmst_chatRoom_standby");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_open");
 }
 
 function sessionDisconnectedHandler(event) {
     // This signals that the user was disconnected from the Session. Any subscribers and publishers
     // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
     publisher = null;
+    jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
+    jQuery("#subscribers").addClass("dmst_chatRoom_closed");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_open");
 }
 
 function connectionDestroyedHandler(event) {
-// This signals that connections were destroyed
+    // This signals that connections were destroyed
+    jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
+    jQuery("#subscribers").addClass("dmst_chatRoom_closed");
+    jQuery("#subscribers").removeClass("dmst_chatRoom_open");
 }
 
 function connectionCreatedHandler(event) {
@@ -143,12 +121,4 @@ function addStream(stream) {
         height: VIDEO_HEIGHT
     };
     subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, subscriberProps);
-}
-
-function show(id) {
-    document.getElementById(id).style.display = 'block';
-}
-
-function hide(id) {
-    document.getElementById(id).style.display = 'none';
 }
