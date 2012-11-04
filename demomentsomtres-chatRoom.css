@@ -1,6 +1,7 @@
 #subscribers {
     display:block;
     border:1px solid #111;
+    min-height:100px;
 }
 .dmst_chatRoom_shop_closed {
     background-color: red;

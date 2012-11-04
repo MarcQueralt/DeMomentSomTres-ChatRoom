@@ -68,6 +68,7 @@ function DMST_ChatRoom_sc() {
     require_once 'SDK/OpenTokSDK.php';
 
     $apiObj = new OpenTokSDK(dmst_chatRoom_api_key(), dmst_chatRoom_api_secret());
+    $shopIsOpen = get_transient(DMST_CHATROOM_OPEN);
     $sessionId = get_transient(DMST_CHATROOM_PUBLIC_SESSION);
     if (false === $sessionId):
         $session = $apiObj->createSession();
@@ -90,7 +91,9 @@ function DMST_ChatRoom_sc() {
     endif;
 
     wp_enqueue_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
-    wp_enqueue_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
+    if (dmst_chatRoom_debug_mode()):
+        wp_enqueue_script('dmst-chatroom-debug', plugins_url('js/demomentsomtres-chatRoom-debug.js', __FILE__), array('opentok'), '1.0.1', true);
+    endif;
     wp_enqueue_script('dmst-chatroom-css', plugins_url('js/demomentsomtres-chatRoom-css.js', __FILE__), array(), '1.0.1', true);
     $dmst_chatroom_isModerator = (current_user_can('manage_options'));
     if ($dmst_chatroom_isModerator):
@@ -128,11 +131,14 @@ function DMST_ChatRoom_sc() {
         $cos.='</div>';
     endif;
     $cos.='<div id="myCamera" class="publisherContainer"></div>';
-    $cos.='<div id="subscribers"></div>';
+    if ($shopIsOpen):
+        $cos.='<div id="subscribers"></div>';
+    else:
+        $cos.='<div id="subscribers" class="dmst_chatRoom_shop_closed"></div>';
+    endif;
     $cos.='<div id="llista"></div>';
     $cos.='<div id="p2p"></div>';
     $cos.='<div id="opentok_console"></div>';
-
     return $cos;
 }
 
