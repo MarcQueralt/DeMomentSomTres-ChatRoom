@@ -131,60 +131,60 @@ function DMST_ChatRoom_sc() {
     $protocol = isset($_SERVER["HTTPS"]) ? 'https://' : 'http://';
     $ajaxurl = admin_url('admin-ajax.php', $protocol);
 
-    $cos = '<script type="text/javascript" charset="utf-8">';
-    $cos.='var apiKey = "' . dmst_chatRoom_api_key() . '";';
-    $cos.='var sessionId = "' . $sessionId . '";';
-    $cos.='var token = "' . $token . '";';
-    $cos.='var session;';
-    $cos.='var publisher;';
-    $cos.='var subscribers = {};';
-    $cos.='var p2pSessionId;';
-    $cos.='var p2pToken;';
-    $cos.='var p2pSession;';
-    $cos.='var p2pPublisher;';
-    $cos.='var p2pSubscribers = {};';
-    $cos.='var VIDEO_WIDTH = 320;';
-    $cos.='var VIDEO_HEIGHT = 240;';
-    $cos.='var WP_ADMIN_URL = "' . $ajaxurl . '";';
-    $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '";';
+    $cos = '<script type="text/javascript" charset="utf-8">'."\n";
+    $cos.='var apiKey = "' . dmst_chatRoom_api_key() . '";'."\n";
+    $cos.='var sessionId = "' . $sessionId . '";'."\n";
+    $cos.='var token = "' . $token . '";'."\n";
+    $cos.='var session;'."\n";
+    $cos.='var publisher;'."\n";
+    $cos.='var subscribers = {};'."\n";
+    $cos.='var p2pSessionId;'."\n";
+    $cos.='var p2pToken;'."\n";
+    $cos.='var p2pSession;'."\n";
+    $cos.='var p2pPublisher;'."\n";
+    $cos.='var p2pSubscribers = {};'."\n";
+    $cos.='var VIDEO_WIDTH = 320;'."\n";
+    $cos.='var VIDEO_HEIGHT = 240;'."\n";
+    $cos.='var WP_ADMIN_URL = "' . $ajaxurl . '";'."\n";
+    $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '";'."\n";
     if (!$dmst_chatroom_isModerator):
-        $cos.='var userId = "' . dmst_get_user_id() . '";';
+        $cos.='var userId = "' . dmst_get_user_id() . '";'."\n";
     endif;
-    $cos.='</script>';
-    $cos.='<div id="messages"></div>';
+    $cos.='</script>'."\n";
+    $cos.='<div id="messages"></div>'."\n";
     if ($dmst_chatroom_isModerator):
-        $cos.='<div id="links">';
-        $cos.='<input type="button" value="' . __('Connect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="connectLink" />';
-        $cos.='<input type="button" value="' . __('Disconnect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="disconnectLink" />';
-        $cos.='<input type="button" value="' . __('Start Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="publishLink" />';
-        $cos.='<input type="button" value="' . __('Stop Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="unpublishLink" />';
-        $cos.='</div>';
+        $cos.='<div id="links">'."\n";
+        $cos.='<input type="button" value="' . __('Connect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="connectLink" />'."\n";
+        $cos.='<input type="button" value="' . __('Disconnect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="disconnectLink" />."\n"';
+        $cos.='<input type="button" value="' . __('Start Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="publishLink" />'."\n";
+        $cos.='<input type="button" value="' . __('Stop Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="unpublishLink" />'."\n";
+        $cos.='</div>'."\n";
         if ($shopIsOpen):
-            $cos.='<div id="myCamera" class="publisherContainer"></div>';
+            $cos.='<div id="myCamera" class="publisherContainer"></div>'."\n";
         else:
-            $cos.='<div id="myCamera" class="publisherContainer" class="dmst_chatRoom_shop_closed"></div>';
+            $cos.='<div id="myCamera" class="publisherContainer" class="dmst_chatRoom_shop_closed"></div>'."\n";
         endif;
     else:
         if ($shopIsOpen):
-            $cos.='<div id="subscribers"></div>';
+            $cos.='<div id="subscribers"></div>'."\n";
         else:
-            $cos.='<div id="subscribers" class="dmst_chatRoom_shop_closed"></div>';
+            $cos.='<div id="subscribers" class="dmst_chatRoom_shop_closed"></div>'."\n";
         endif;
     endif;
-    $cos.='<div id="listAccess">';
-    $cos.='<div id="waitingList"></div>';
+    $cos.='<div id="listAccess">'."\n";
+    $cos.='<div id="waitingList"></div>'."\n";
     if ($dmst_chatroom_isModerator):
-        $cos.='<input type="button" value="' . __('Go', DMST_CHATROOM_TEXT_DOMAIN) . '" id="goLink" />';
+        $cos.='<input type="button" value="' . __('Go', DMST_CHATROOM_TEXT_DOMAIN) . '" id="goLink" />'."\n";
     else:
-        $cos.='<input type="button" value="' . __('Ask your Turn', DMST_CHATROOM_TEXT_DOMAIN) . '" id="turnLink" />';
-        $cos.='<input type="button" value="' . __('Refresh', DMST_CHATROOM_TEXT_DOMAIN) . '" id="refreshLink" />';
+        $cos.='<input type="button" value="' . __('Ask your Turn', DMST_CHATROOM_TEXT_DOMAIN) . '" id="turnLink" />'."\n";
+        $cos.='<input type="button" value="' . __('Refresh', DMST_CHATROOM_TEXT_DOMAIN) . '" id="refreshLink" />'."\n";
     endif;
-    $cos.='</div> <!--listAccess-->';
-    $cos.='<div id="p2p"><div id="p2pMe"></div><div id="p2pYou"></div></div>';
+    $cos.='</div> <!--listAccess-->'."\n";
+    $cos.='<div id="p2p">'."\n".'<div id="p2pMe"></div>'."\n".'<div id="p2pYou"></div>'."\n".'</div>'."\n";
     if ($dmst_chatroom_isModerator):
-        $cos.='<input type="button" value="' . __('p2p Stop', DMST_CHATROOM_TEXT_DOMAIN) . '" id="p2pStopLink" />';
+        $cos.='<input type="button" value="' . __('p2p Stop', DMST_CHATROOM_TEXT_DOMAIN) . '" id="p2pStopLink" />'."\n";
     endif;
-    $cos.='<div id="opentok_console"></div>';
+    $cos.='<div id="opentok_console"></div>'."\n";
     return $cos;
 }
 
