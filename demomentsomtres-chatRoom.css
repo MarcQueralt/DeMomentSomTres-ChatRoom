@@ -3,6 +3,13 @@
     border:1px solid #111;
     min-height:100px;
 }
+div.waiting_list, div.waiting_list_you {
+    display: inline-block;
+    margin: 0.1em;
+}
+div.waiting_list_you {
+    font-weight: bold;
+}
 #myCamera {
     min-height: 100px;
 }

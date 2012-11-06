@@ -19,9 +19,17 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
     session.addEventListener('streamCreated', streamCreatedHandler);
     session.addEventListener('streamDestroyed', streamDestroyedHandler);
-    connect();
+    connect(); 
 }
-
+jQuery("#turnLink").click(function(){
+    ask_your_turn();
+    refresh_list();
+});
+jQuery("#refreshLink").click(function() {
+    refresh_list(); 
+});
+wait_your_turn();
+refresh_list();
 
 //--------------------------------------
 //  LINK CLICK HANDLERS
@@ -35,6 +43,73 @@ function connect() {
     session.connect(apiKey, token);
 }
 
+function ask_your_turn() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_add_to_queue&id='+userId,
+        success: function(data){
+            jQuery('#messages').html(data);
+            refresh_list();
+        }
+    };
+    jQuery.ajax(dataToSend);
+}
+
+function wait_your_turn() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_in_chatRoom',
+        timeout: 2000,
+        success: function(data){
+            if(data==userId) {
+                prepare_p2p();
+            } else {
+                window.setTimeout(wait_your_turn,1000);
+            }
+        },
+        error: function(XMLHttpRequest,textStatus,errorThrown) {
+            window.setTimeout(wait_your_turn,1000);
+        }
+    };
+    jQuery.ajax(dataToSend);        
+}
+
+function prepare_p2p() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_p2pToken',
+        success: function(data){
+            if(data!="") {
+                p2pToken=data;
+                get_p2p_session();
+            }
+        }
+    }; 
+jQuery.ajax(dataToSend);        
+}
+
+function get_p2p_session() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_p2pSession&userId='+userId,
+        success: function(data){
+            if(data!="") {
+                p2pSessionId=data;
+                start_p2p_session();
+            }
+        }
+    }; 
+    jQuery.ajax(dataToSend);        
+}
+
 //--------------------------------------
 //  OPENTOK EVENT HANDLERS
 //--------------------------------------
@@ -45,7 +120,7 @@ function sessionConnectedHandler(event) {
         addStream(event.streams[i]);
     }
     if(0==event.streams.length) {
-        jQuery("#subscribers").addClass("dmst_chatRoom_standby");
+        dmst_check_status();
     } else {
         jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
         jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
@@ -82,13 +157,12 @@ function sessionDisconnectedHandler(event) {
 
 function connectionDestroyedHandler(event) {
     // This signals that connections were destroyed
-    jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
-    jQuery("#subscribers").addClass("dmst_chatRoom_closed");
-    jQuery("#subscribers").removeClass("dmst_chatRoom_open");
+    dmst_check_status();
 }
 
 function connectionCreatedHandler(event) {
-// This signals new connections have been created.
+    // This signals new connections have been created.
+    dmst_check_status();
 }
 
 /* If you un-comment the call to TB.addEventListener("exception", exceptionHandler) above, OpenTok calls the
@@ -121,4 +195,152 @@ function addStream(stream) {
         height: VIDEO_HEIGHT
     };
     subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, subscriberProps);
+}
+
+/**
+ * Checks status via ajax and shows or hides attention area anc changes screen styles
+ */
+function dmst_check_status() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_status',
+        success: function(data){
+            if(data=='1') {
+                jQuery("#subscribers").addClass("dmst_chatRoom_standby");
+                jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
+                jQuery("#subscribers").removeClass("dmst_chatRoom_open");
+                jQuery('#listAccess').show();
+            } else {
+                jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
+                jQuery("#subscribers").addClass("dmst_chatRoom_closed");
+                jQuery("#subscribers").removeClass("dmst_chatRoom_open");
+                jQuery('#listAccess').hide();
+            }
+        }
+    };
+    jQuery.ajax(dataToSend);    
+}
+
+/** 
+ * updates list status in list
+ */
+function refresh_list() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        timeout:2000,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_pretty_list&id='+userId,
+        success: function(data){
+            jQuery('#waitingList').html(data);
+            window.setTimeout(refresh_list,10000);
+        },
+        error: function(XMLHttpRequest,textStatus,errorThrown) {
+            window.setTimeout(refresh_list,10000);
+        }
+    };
+    jQuery.ajax(dataToSend);        
+}
+
+// P2P Publishing
+function start_p2p_session() {
+    p2pSession=TB.initSession(p2pSessionId);
+    p2pSession.addEventListener('sessionConnected', p2pSessionConnectedHandler);
+    p2pSession.addEventListener('sessionDisconnected', p2pSessionDisconnectedHandler);
+    p2pSession.addEventListener('connectionCreated', p2pConnectionCreatedHandler);
+    p2pSession.addEventListener('connectionDestroyed', p2pConnectionDestroyedHandler);
+    p2pSession.addEventListener('streamCreated', p2pStreamCreatedHandler);
+    p2pSession.addEventListener('streamDestroyed', p2pStreamDestroyedHandler);
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_p2pToken',
+        success: function(data){
+            if(!(data=="")) {
+                p2pToken=data;
+                p2pSession.connect(apiKey,p2pToken);
+                p2pStartPublishing();
+            }
+        }
+    };
+    jQuery.ajax(dataToSend);
+}
+
+function p2pStartPublishing() {
+    if (!p2pPublisher) {
+        var parentDiv = document.getElementById("p2pMe");
+        var publisherDiv = document.createElement('div');
+        publisherDiv.setAttribute('id', 'opentok_p2p_publisher');
+        parentDiv.appendChild(publisherDiv);
+        var publisherProps = {
+            width: VIDEO_WIDTH, 
+            height: VIDEO_HEIGHT
+        };
+        p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        p2pSession.publish(p2pPublisher);
+    }
+}
+
+function p2pStopPublishing() {
+    if (p2pPublisher) {
+        p2pSession.unpublish(p2pPublisher);
+    }
+    p2pPublisher = null;
+}
+
+// P2P EVENT HANDLERS
+
+function p2pSessionConnectedHandler(event) {
+    // Subscribe to all streams currently in the Session
+    for (var i = 0; i < event.streams.length; i++) {
+        p2pAddStream(event.streams[i]);
+    }
+}
+
+function p2pStreamCreatedHandler(event) {
+    // Subscribe to the newly created streams
+    for (var i = 0; i < event.streams.length; i++) {
+        p2pAddStream(event.streams[i]);
+    }
+}
+
+function p2pStreamDestroyedHandler(event) {
+// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
+// This default behaviour can be prevented using event.preventDefault()
+}
+
+function p2pSessionDisconnectedHandler(event) {
+    // This signals that the user was disconnected from the Session. Any subscribers and publishers
+    // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
+    p2pPublisher = null;
+}
+
+function p2pConnectionDestroyedHandler(event) {
+// This signals that connections were destroyed
+}
+
+function p2pConnectionCreatedHandler(event) {
+// This signals new connections have been created.
+}
+
+//--------------------------------------
+//  P2P HELPER METHODS
+//--------------------------------------
+
+function p2pAddStream(stream) {
+    // Check if this is the stream that I am publishing, and if so do not publish.
+    if (stream.connection.connectionId == p2pSession.connection.connectionId) {
+        return;
+    }
+    var subscriberDiv = document.createElement('div'); // Create a div for the subscriber to replace
+    subscriberDiv.setAttribute('id', stream.streamId); // Give the replacement div the id of the stream as its id.
+    document.getElementById("p2pYou").appendChild(subscriberDiv);
+    var subscriberProps = {
+        width: VIDEO_WIDTH, 
+        height: VIDEO_HEIGHT
+    };
+    p2pSubscribers[stream.streamId] = p2pSession.subscribe(stream, subscriberDiv.id, subscriberProps);
 }

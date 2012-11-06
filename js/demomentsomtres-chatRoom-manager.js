@@ -2,6 +2,8 @@
 // for WordPress plugin demomentsomtres-chatRoom.
 // more info http://demomentsomtres.com
 
+var readyForSession;
+
 TB.addEventListener("exception", exceptionHandler);		
 if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     alert("You don't have the minimum requirements to run this application."
@@ -32,7 +34,19 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     jQuery('#unpublishLink').click(function(){
         stopPublishing()
     });
+    connect();
 }
+jQuery("#refreshLink").click(function() {
+    refresh_list(); 
+});
+jQuery("#goLink").click(function() {
+    waiting_list_go(1);
+});
+jQuery("#p2pStopLink").click(function() {
+    p2pStopPublishing();
+});
+refresh_list();
+
 //--------------------------------------
 //  LINK CLICK HANDLERS
 //--------------------------------------
@@ -68,6 +82,7 @@ function disconnect() {
         data: 'action=dmst_chatRoom_close',
         success: function(data){
             jQuery('#messages').html(data);
+            sessionReset();
         },
         error: function(data){
             jQuery('#messages').html(data);
@@ -193,4 +208,156 @@ function addStream(stream) {
         height: VIDEO_HEIGHT
     };
     subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, subscriberProps);
+}
+
+/** 
+ * updates list status in list
+ */
+function refresh_list() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        timeout:2000,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_pretty_list',
+        success: function(data){
+            jQuery('#waitingList').html(data);
+            window.setTimeout(refresh_list,5000);
+        },
+        error: function(XMLHttpRequest,textStatus,errorThrown) {
+            window.setTimeout(refresh_list,5000);
+        }
+    };
+    jQuery.ajax(dataToSend);        
+}
+
+function waiting_list_go(pos) {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_to_chatRoom&pos='+pos,
+        success: function(data){
+            if(!(data=="")) {
+                p2pSessionId=data;
+                start_p2p_session();
+            }
+        }
+    };
+    jQuery.ajax(dataToSend);
+}
+
+// P2P Publishing
+function start_p2p_session() {
+    p2pSession=TB.initSession(p2pSessionId);
+    p2pSession.addEventListener('sessionConnected', p2pSessionConnectedHandler);
+    p2pSession.addEventListener('sessionDisconnected', p2pSessionDisconnectedHandler);
+    p2pSession.addEventListener('connectionCreated', p2pConnectionCreatedHandler);
+    p2pSession.addEventListener('connectionDestroyed', p2pConnectionDestroyedHandler);
+    p2pSession.addEventListener('streamCreated', p2pStreamCreatedHandler);
+    p2pSession.addEventListener('streamDestroyed', p2pStreamDestroyedHandler);
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_p2pToken',
+        success: function(data){
+            if(!(data=="")) {
+                p2pToken=data;
+                stopPublishing();
+                p2pSession.connect(apiKey,p2pToken);
+                p2pStartPublishing();
+            }
+        }
+    };
+    jQuery.ajax(dataToSend);
+}
+
+function p2pStartPublishing() {
+    if (!p2pPublisher) {
+        var parentDiv = document.getElementById("p2pMe");
+        var publisherDiv = document.createElement('div');
+        publisherDiv.setAttribute('id', 'opentok_p2p_publisher');
+        parentDiv.appendChild(publisherDiv);
+        var publisherProps = {
+            width: VIDEO_WIDTH, 
+            height: VIDEO_HEIGHT
+        };
+        p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        p2pSession.publish(p2pPublisher);
+    }
+}
+
+function p2pStopPublishing() {
+    if (p2pPublisher) {
+        p2pSession.unpublish(p2pPublisher);
+    }
+    p2pPublisher = null;
+    startPublishing();
+}
+
+// P2P EVENT HANDLERS
+
+function p2pSessionConnectedHandler(event) {
+    // Subscribe to all streams currently in the Session
+    for (var i = 0; i < event.streams.length; i++) {
+        p2pAddStream(event.streams[i]);
+    }
+}
+
+function p2pStreamCreatedHandler(event) {
+    // Subscribe to the newly created streams
+    for (var i = 0; i < event.streams.length; i++) {
+        p2pAddStream(event.streams[i]);
+    }
+}
+
+function p2pStreamDestroyedHandler(event) {
+// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
+// This default behaviour can be prevented using event.preventDefault()
+}
+
+function p2pSessionDisconnectedHandler(event) {
+    // This signals that the user was disconnected from the Session. Any subscribers and publishers
+    // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
+    p2pPublisher = null;
+}
+
+function p2pConnectionDestroyedHandler(event) {
+// This signals that connections were destroyed
+}
+
+function p2pConnectionCreatedHandler(event) {
+// This signals new connections have been created.
+}
+
+//--------------------------------------
+//  P2P HELPER METHODS
+//--------------------------------------
+
+function p2pAddStream(stream) {
+    // Check if this is the stream that I am publishing, and if so do not publish.
+    if (stream.connection.connectionId == p2pSession.connection.connectionId) {
+        return;
+    }
+    var subscriberDiv = document.createElement('div'); // Create a div for the subscriber to replace
+    subscriberDiv.setAttribute('id', stream.streamId); // Give the replacement div the id of the stream as its id.
+    document.getElementById("p2pYou").appendChild(subscriberDiv);
+    var subscriberProps = {
+        width: VIDEO_WIDTH, 
+        height: VIDEO_HEIGHT
+    };
+    p2pSubscribers[stream.streamId] = p2pSession.subscribe(stream, subscriberDiv.id, subscriberProps);
+}
+
+function sessionReset() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'json',
+        data: 'action=dmst_chatRoom_resetSession',
+        success: function(data){
+        }
+    };
+    jQuery.ajax(dataToSend);    
 }

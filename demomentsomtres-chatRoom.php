@@ -31,10 +31,12 @@ define('DMST_CHATROOM_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('DMST_CHATROOM_TEXT_DOMAIN', 'DeMomentSomTres-ChatRoom');
 define('DMST_CHATROOM_OPTIONS', 'dmst_chatroom_options');
 define('DMST_CHATROOM_PUBLIC_SESSION', 'dmst_chatroom_public_session');
-define('DMST_CHATROOM_PRIVATE_SESSIONS', 'dmst_chatroom_private_session');
 define('DMST_CHATROOM_OPEN', 'dmst_chatroom_open');
-define('DMST_CHATROOM_SESSIONS_COUNT', 3);
+define('DMST_CHATROOM_WAITING_LIST', 'dmst_chatroom_waiting_list');
+define('DMST_CHATROOM_IN_CHATROOM', 'dmst_chatroom_in_chatroom');
 define('DMST_CHATROOM_TRANSCIENT_LIVE', 36000);
+define('DMST_CHATROOM_SESSION_USER_ID', 'dmst_chatroom_user_id');
+define('DMST_CHATROOM_P2P_SESSIONID', 'dmst_chatroom_p2p_sessionid');
 
 require_once DMST_CHATROOM_PLUGIN_PATH . 'admin.php';
 require_once DMST_CHATROOM_PLUGIN_PATH . 'functions.php';
@@ -51,6 +53,10 @@ if (!is_admin())
 load_plugin_textdomain(DMST_CHATROOM_TEXT_DOMAIN, false, DMST_CHATROOM_PLUGIN_URL . '/languages');
 
 /**
+ * Add session
+ */
+add_action('init', 'dmst_chatRoom_init');
+/**
  * Register shortcode: [DeMomentSomTresChatRoom]
  */
 add_shortcode('DeMomentSomTresChatRoom', 'DMST_ChatRoom_sc');
@@ -60,6 +66,31 @@ add_shortcode('DeMomentSomTresChatRoom', 'DMST_ChatRoom_sc');
  */
 add_action('wp_ajax_dmst_chatRoom_open', 'dmst_chatRoom_open');
 add_action('wp_ajax_dmst_chatRoom_close', 'dmst_chatRoom_close');
+add_action('wp_ajax_dmst_chatRoom_add_to_queue', 'dmst_chatRoom_add_to_queue');
+add_action('wp_ajax_dmst_chatRoom_queue_count', 'dmst_chatRoom_queue_count');
+add_action('wp_ajax_dmst_chatRoom_queue_list', 'dmst_chatRoom_queue_list');
+add_action('wp_ajax_dmst_chatRoom_to_chatRoom', 'dmst_chatRoom_to_chatRoom');
+add_action('wp_ajax_dmst_chatRoom_p2pToken', 'dmst_chatRoom_p2pToken_manager');
+add_action('wp_ajax_dmst_chatRoom_in_chatRoom', 'dmst_chatRoom_in_chatRoom');
+add_action('wp_ajax_dmst_chatRoom_in_list', 'dmst_chatRoom_in_list');
+add_action('wp_ajax_dmst_chatRoom_status', 'dmst_chatRoom_status');
+add_action('wp_ajax_dmst_chatRoom_clear_waiting_list', 'dmst_chatRoom_clear_waiting_list');
+add_action('wp_ajax_dmst_chatRoom_list_length', 'dmst_chatRoom_list_lenght');
+add_action('wp_ajax_dmst_chatRoom_pretty_list', 'dmst_chatRoom_manager_pretty_waiting_list');
+add_action('wp_ajax_dmst_chatRoom_resetSession', 'dmst_chatRoom_resetSession');
+
+/**
+ * Adds ajax handlers for unprivileged users
+ */
+add_action('wp_ajax_nopriv_dmst_chatRoom_add_to_queue', 'dmst_chatRoom_add_to_queue');
+add_action('wp_ajax_nopriv_dmst_chatRoom_queue_count', 'dmst_chatRoom_queue_count');
+add_action('wp_ajax_nopriv_dmst_chatRoom_in_list', 'dmst_chatRoom_in_list');
+add_action('wp_ajax_nopriv_dmst_chatRoom_in_chatRoom', 'dmst_chatRoom_in_chatRoom');
+add_action('wp_ajax_nopriv_dmst_chatRoom_status', 'dmst_chatRoom_status');
+add_action('wp_ajax_nopriv_dmst_chatRoom_list_length', 'dmst_chatRoom_list_lenght');
+add_action('wp_ajax_nopriv_dmst_chatRoom_pretty_list', 'dmst_chatRoom_pretty_waiting_list');
+add_action('wp_ajax_nopriv_dmst_chatRoom_p2pToken', 'dmst_chatRoom_p2pToken_user');
+add_action('wp_ajax_nopriv_dmst_chatRoom_p2pSession', 'dmst_chatRoom_p2pSession');
 
 /**
  * The callback function that will replace [DeMomentSomTresChatRoom]
@@ -80,18 +111,6 @@ function DMST_ChatRoom_sc() {
     else:
         set_transient(DMST_CHATROOM_PUBLIC_SESSION, $sessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
     endif;
-    $p2pSessionIds = get_transient(DMST_CHATROOM_PRIVATE_SESSIONS);
-    if (false === $p2pSessionIds):
-        $p2pSessionIds = array();
-        for ($i = 1; $i <= DMST_CHATROOM_SESSIONS_COUNT; $i++):
-            $session = $apiObj->createSession();
-            $p2pSessionIds[$i] = $session->getSessionId();
-        endfor;
-        $sessionId = $session->getSessionId();
-        set_transient(DMST_CHATROOM_PRIVATE_SESSIONS, $sessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
-    else:
-        set_transient(DMST_CHATROOM_PRIVATE_SESSIONS, $sessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
-    endif;
 
     wp_enqueue_script('opentok', 'http://static.opentok.com/v0.91/js/TB.min.js', array(), '0.91', true);
     if (dmst_chatRoom_debug_mode()):
@@ -101,10 +120,10 @@ function DMST_ChatRoom_sc() {
     $dmst_chatroom_isModerator = (current_user_can('manage_options'));
     if ($dmst_chatroom_isModerator):
         $role = RoleConstants::MODERATOR;
-        wp_enqueue_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-shop.js', __FILE__), array('opentok'), '1.0.1', true);
+        wp_enqueue_script('dmst-chatroom-shop', plugins_url('js/demomentsomtres-chatRoom-manager.js', __FILE__), array('opentok'), '1.0.1', true);
     else:
         $role = RoleConstants::SUBSCRIBER;
-        wp_enqueue_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-client.js', __FILE__), array('opentok'), '1.0.1', true);
+        wp_enqueue_script('dmst-chatroom-client', plugins_url('js/demomentsomtres-chatRoom-user.js', __FILE__), array('opentok'), '1.0.1', true);
     endif;
     $connection_data = '';
     $token = $apiObj->generateToken($sessionId, $role, NULL, $connection_data);
@@ -115,20 +134,25 @@ function DMST_ChatRoom_sc() {
     $cos = '<script type="text/javascript" charset="utf-8">';
     $cos.='var apiKey = "' . dmst_chatRoom_api_key() . '";';
     $cos.='var sessionId = "' . $sessionId . '";';
-    $cos.='var privateSessionsIds = {';
-    $cos.='};';
     $cos.='var token = "' . $token . '";';
     $cos.='var session;';
     $cos.='var publisher;';
     $cos.='var subscribers = {};';
+    $cos.='var p2pSessionId;';
+    $cos.='var p2pToken;';
+    $cos.='var p2pSession;';
+    $cos.='var p2pPublisher;';
+    $cos.='var p2pSubscribers = {};';
     $cos.='var VIDEO_WIDTH = 320;';
     $cos.='var VIDEO_HEIGHT = 240;';
     $cos.='var WP_ADMIN_URL = "' . $ajaxurl . '";';
-    $cos.='var VIDEO_BACKGROUND = "' . 'http://t2.gstatic.com/images?q=tbn:ANd9GcQp7U_QQbwOuEQ9QwnrG5K4oyUVPlaLrf4BkkH2L9_axlHB-VTk' . '";';
-    $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '"';
+    $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '";';
+    if (!$dmst_chatroom_isModerator):
+        $cos.='var userId = "' . dmst_get_user_id() . '";';
+    endif;
     $cos.='</script>';
+    $cos.='<div id="messages"></div>';
     if ($dmst_chatroom_isModerator):
-        $cos.='<div id="messages"></div>';
         $cos.='<div id="links">';
         $cos.='<input type="button" value="' . __('Connect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="connectLink" />';
         $cos.='<input type="button" value="' . __('Disconnect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="disconnectLink" />';
@@ -140,17 +164,26 @@ function DMST_ChatRoom_sc() {
         else:
             $cos.='<div id="myCamera" class="publisherContainer" class="dmst_chatRoom_shop_closed"></div>';
         endif;
-        $cos.='<div id="subscribers"></div>';
     else:
-//        $cos.='<div id="myCamera" class="publisherContainer"></div>';
         if ($shopIsOpen):
             $cos.='<div id="subscribers"></div>';
         else:
             $cos.='<div id="subscribers" class="dmst_chatRoom_shop_closed"></div>';
         endif;
     endif;
-    $cos.='<div id="llista"></div>';
-    $cos.='<div id="p2p"></div>';
+    $cos.='<div id="listAccess">';
+    $cos.='<div id="waitingList"></div>';
+    if ($dmst_chatroom_isModerator):
+        $cos.='<input type="button" value="' . __('Go', DMST_CHATROOM_TEXT_DOMAIN) . '" id="goLink" />';
+    else:
+        $cos.='<input type="button" value="' . __('Ask your Turn', DMST_CHATROOM_TEXT_DOMAIN) . '" id="turnLink" />';
+        $cos.='<input type="button" value="' . __('Refresh', DMST_CHATROOM_TEXT_DOMAIN) . '" id="refreshLink" />';
+    endif;
+    $cos.='</div> <!--listAccess-->';
+    $cos.='<div id="p2p"><div id="p2pMe"></div><div id="p2pYou"></div></div>';
+    if ($dmst_chatroom_isModerator):
+        $cos.='<input type="button" value="' . __('p2p Stop', DMST_CHATROOM_TEXT_DOMAIN) . '" id="p2pStopLink" />';
+    endif;
     $cos.='<div id="opentok_console"></div>';
     return $cos;
 }
@@ -164,7 +197,7 @@ function dmst_chatRoom_enqueue_jquery() {
 }
 
 /**
- * Opens the shop
+ * Opens the chatRoom
  * Ajax handler
  * @since 1.0.1
  */
@@ -175,7 +208,7 @@ function dmst_chatRoom_open() {
 }
 
 /**
- * Closes the shop
+ * Closes the chatRoom
  * Ajax handler
  * @since 1.0.1
  */
@@ -183,6 +216,319 @@ function dmst_chatRoom_close() {
     set_transient(DMST_CHATROOM_OPEN, false, DMST_CHATROOM_TRANSCIENT_LIVE);
     echo __('ChatRoom is closed', DMST_CHATROOM_TEXT_DOMAIN);
     die();
+}
+
+/**
+ * Check chatRoom status
+ * Ajax handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_status() {
+    $status = get_transient(DMST_CHATROOM_OPEN);
+    if ($status):
+        echo 1;
+    else:
+        echo 0;
+    endif;
+    die();
+}
+
+/**
+ * Inserts a new candidate to the queue
+ * Ajax handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_add_to_queue() {
+    if (isset($_REQUEST["id"])):
+        $id = $_REQUEST["id"];
+        $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+        if (!$list):
+            $list = array();
+        endif;
+        if (!in_array($id, $list)):
+            array_push($list, $id);
+            set_transient(DMST_CHATROOM_WAITING_LIST, $list, DMST_CHATROOM_TRANSCIENT_LIVE);
+            echo __('You\'ve been added to the list', DMST_CHATROOM_TEXT_DOMAIN);
+        else:
+            echo __('You cannot add yourself twice', DMST_CHATROOM_TEXT_DOMAIN);
+        endif;
+    else:
+        echo __('ERROR: You must specify an id', DMST_CHATROOM_TEXT_DOMAIN);
+    endif;
+    die();
+}
+
+/**
+ * Counts candidates on queue
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_queue_count() {
+    $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+    if (!$list):
+        $list = array();
+    endif;
+    echo count($list);
+    die();
+}
+
+/**
+ * List all candidates on queue
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_queue_list() {
+    $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+    if (!$list):
+        $list = array();
+    endif;
+    echo print_r($list, true);
+    die();
+}
+
+/**
+ * Move the first in queue to the chatRoom and return a P2PSessionID
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_to_chatRoom() {
+    require_once 'SDK/OpenTokSDK.php';
+
+    if (isset($_REQUEST["pos"])):
+        $pos = $_REQUEST["pos"];
+        $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+        if (!$list):
+            $list = array();
+        endif;
+        $list = array_values($list);
+        if (isset($list[$pos - 1])):
+            $client = $list[$pos - 1];
+            $list = array_diff($list, array($client));
+            $list = array_values($list);
+            set_transient(DMST_CHATROOM_WAITING_LIST, $list, DMST_CHATROOM_TRANSCIENT_LIVE);
+            set_transient(DMST_CHATROOM_IN_CHATROOM, $client, DMST_CHATROOM_TRANSCIENT_LIVE);
+            $apiObj = new OpenTokSDK(dmst_chatRoom_api_key(), dmst_chatRoom_api_secret());
+            $p2pSession = $apiObj->createSession('', array(SessionPropertyConstants::P2P_PREFERENCE => "enabled"));
+            $p2pSessionId = $p2pSession->getSessionId();
+            set_transient(DMST_CHATROOM_P2P_SESSIONID, $p2pSessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
+            echo json_encode($p2pSessionId);
+        endif;
+    endif;
+    die();
+}
+
+/**
+ * Show the candidate that is been attended
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_in_chatRoom() {
+    $inChatRoom = get_transient(DMST_CHATROOM_IN_CHATROOM);
+    if (!inChatRoom):
+        echo '0';
+    else:
+        echo $inChatRoom;
+    endif;
+    die();
+}
+
+/**
+ * Shows the position of a candidate in the list.
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_in_list() {
+    if (isset($_REQUEST["id"])):
+        $id = $_REQUEST["id"];
+        $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+        if (!$list):
+            $list = array();
+        endif;
+        $pos = array_search($id, $list);
+        if ($pos === false):
+            echo __('Your not in the waiting list', DMST_CHATROOM_TEXT_DOMAIN);
+        else:
+            $keys = array_keys($list);
+            $posi = array_search($pos, $keys);
+            echo __('Your position in the waiting list is', DMST_CHATROOM_TEXT_DOMAIN);
+            echo ' ';
+            echo $posi;
+        endif;
+    endif;
+    die();
+}
+
+/**
+ * Shows the number of people in the waiting List
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_list_lenght() {
+    $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+    if (!$list):
+        echo 0;
+    else:
+        echo count($list);
+    endif;
+    die();
+}
+
+/**
+ * Clears the waiting list
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_clear_waiting_list() {
+    $client = array_shift($list);
+    set_transient(DMST_CHATROOM_WAITING_LIST, $list, DMST_CHATROOM_TRANSCIENT_LIVE);
+    die();
+}
+
+/**
+ * Prints a pretty waiting list
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_pretty_waiting_list() {
+    $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+    if (!$list):
+        $list = array();
+    endif;
+    if (isset($_REQUEST["id"])):
+        $id = $_REQUEST["id"];
+        $pos = array_search($id, $list);
+        if ($pos === false):
+            $posi = -1;
+        else:
+            $keys = array_keys($list);
+            $posi = array_search($pos, $keys);
+        endif;
+    else:
+        $posi = -1;
+    endif;
+    for ($i = 0; $i < count($list); $i++):
+        if ($i == $posi):
+            echo '<div class="waiting_list_you">';
+            echo '<span class="you">' . __('You', DMST_CHATROOM_TEXT_DOMAIN) . '</span>';
+        else:
+            echo '<div class="waiting_list">';
+        endif;
+        echo $i + 1;
+        echo '</div>';
+    endfor;
+    die();
+}
+
+/**
+ * Prints a pretty waiting list
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_manager_pretty_waiting_list() {
+    $list = get_transient(DMST_CHATROOM_WAITING_LIST);
+    if (!$list):
+        $list = array();
+    endif;
+    for ($i = 0; $i < count($list); $i++):
+        echo '<div class="waiting_list">';
+        echo $i + 1;
+        echo '</div>';
+    endfor;
+    die();
+}
+
+/**
+ * creates a token for the given sessionId for a manager
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_p2pToken_manager() {
+    require_once 'SDK/OpenTokSDK.php';
+    $sessionId = get_transient(DMST_CHATROOM_P2P_SESSIONID);
+    if ($sessionId):
+        $apiObj = new OpenTokSDK(dmst_chatRoom_api_key(), dmst_chatRoom_api_secret());
+        $token = $apiObj->generateToken($sessionId, RoleConstants::MODERATOR, NULL, $connection_data);
+        echo json_encode($token);
+    endif;
+    die();
+}
+
+/**
+ * creates a token for the given sessionId for a user
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_p2pToken_user() {
+    require_once 'SDK/OpenTokSDK.php';
+    $sessionId = get_transient(DMST_CHATROOM_P2P_SESSIONID);
+    if ($sessionId):
+        $apiObj = new OpenTokSDK(dmst_chatRoom_api_key(), dmst_chatRoom_api_secret());
+        $token = $apiObj->generateToken($sessionId, RoleConstants::PUBLISHER, NULL, $connection_data);
+        echo json_encode($token);
+    endif;
+    die();
+}
+
+/**
+ * returns the p2psession id for the current p2p session if the user is the right one
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_p2pSession() {
+    if (isset($_REQUEST["userId"])):
+        $userId = $_REQUEST["userId"];
+        $expectedUser = get_transient(DMST_CHATROOM_IN_CHATROOM);
+        if ($expectedUser == $userId):
+            $p2pSessionId = get_transient(DMST_CHATROOM_P2P_SESSIONID);
+            if ($p2pSessionId):
+                echo json_encode($p2pSessionId);
+            endif;
+        endif;
+    endif;
+    die();
+}
+
+/**
+ * clears in chatroom
+ * AJAX handler
+ * @since 1.0.1
+ */
+function dmst_chatRoom_resetSession() {
+    delete_transient(DMST_CHATROOM_IN_CHATROOM);
+    die();
+}
+
+/**
+ * Create a session
+ */
+function dmst_chatRoom_init() {
+    if (!session_id()) {
+        session_start();
+    }
+}
+
+/**
+ * Get user id if it is stored in session or create a new one
+ * @return string the user id
+ * @since 1.0.1
+ */
+function dmst_get_user_id() {
+    if (isset($_SESSION[DMST_CHATROOM_SESSION_USER_ID])):
+        $user_id = $_SESSION[DMST_CHATROOM_SESSION_USER_ID];
+    else:
+        $user_id = dmst_chatRoom_user_id_calculate();
+        $_SESSION[DMST_CHATROOM_SESSION_USER_ID] = $user_id;
+    endif;
+    return $user_id;
+}
+
+/**
+ * Create a unique user identification
+ * @return string the new user identifier
+ * @since 1.0.1
+ */
+function dmst_chatRoom_user_id_calculate() {
+    return '' . time() . rand(10, 99);
 }
 
 ?>

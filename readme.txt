@@ -43,3 +43,9 @@ Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in
 * [New] Video Chat using Video Embed functionality.
 
 == Upgrade Notice ==
+
+
+== Future functionality ==
+* supress voice in public view
+* User identification
+* Select the user that will be attended
