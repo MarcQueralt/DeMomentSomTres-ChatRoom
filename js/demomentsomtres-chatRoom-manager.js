@@ -310,7 +310,7 @@ function p2pSessionConnectedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         p2pAddStream(event.streams[i]);
     }
-    stopPublishing();
+    window.setTimeout(stopPublishing,15000);
 }
 
 function p2pStreamCreatedHandler(event) {
