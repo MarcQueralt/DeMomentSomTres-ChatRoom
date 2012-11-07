@@ -2,8 +2,6 @@
 // for WordPress plugin demomentsomtres-chatRoom.
 // more info http://demomentsomtres.com
 
-var readyForSession;
-
 TB.addEventListener("exception", exceptionHandler);		
 if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     alert("You don't have the minimum requirements to run this application."
@@ -51,10 +49,6 @@ refresh_list();
 //  LINK CLICK HANDLERS
 //--------------------------------------
 
-/* If testing the app from the desktop, be sure to check the Flash Player Global Security setting
- * to allow the page from communicating with SWF content loaded from the web. For more information,
- * see http://www.tokbox.com/opentok/build/tutorials/helloworld.html#localTest
- */
 function connect() {
     var dataToSend={
         type: "GET",
@@ -239,33 +233,9 @@ function waiting_list_go(pos) {
         data: 'action=dmst_chatRoom_to_chatRoom&pos='+pos,
         success: function(data){
             if(!(data=="")) {
-                p2pSessionId=data;
-                start_p2p_session();
-            }
-        }
-    };
-    jQuery.ajax(dataToSend);
-}
-
-// P2P Publishing
-function start_p2p_session() {
-    p2pSession=TB.initSession(p2pSessionId);
-    p2pSession.addEventListener('sessionConnected', p2pSessionConnectedHandler);
-    p2pSession.addEventListener('sessionDisconnected', p2pSessionDisconnectedHandler);
-    p2pSession.addEventListener('connectionCreated', p2pConnectionCreatedHandler);
-    p2pSession.addEventListener('connectionDestroyed', p2pConnectionDestroyedHandler);
-    p2pSession.addEventListener('streamCreated', p2pStreamCreatedHandler);
-    p2pSession.addEventListener('streamDestroyed', p2pStreamDestroyedHandler);
-    var dataToSend={
-        type: "GET",
-        url: WP_ADMIN_URL,
-        dataType: 'json',
-        data: 'action=dmst_chatRoom_p2pToken',
-        success: function(data){
-            if(!(data=="")) {
-                p2pToken=data;
-                stopPublishing();
-                p2pSession.connect(apiKey,p2pToken);
+                var result=data;
+                p2pSessionId=result['id'];
+                p2pToken=result['token'];
                 p2pStartPublishing();
             }
         }
@@ -273,7 +243,41 @@ function start_p2p_session() {
     jQuery.ajax(dataToSend);
 }
 
+// P2P Publishing
+//function start_p2p_session() {
+//    p2pSession=TB.initSession(p2pSessionId);
+//    p2pSession.addEventListener('sessionConnected', p2pSessionConnectedHandler);
+//    p2pSession.addEventListener('sessionDisconnected', p2pSessionDisconnectedHandler);
+//    p2pSession.addEventListener('connectionCreated', p2pConnectionCreatedHandler);
+//    p2pSession.addEventListener('connectionDestroyed', p2pConnectionDestroyedHandler);
+//    p2pSession.addEventListener('streamCreated', p2pStreamCreatedHandler);
+//    p2pSession.addEventListener('streamDestroyed', p2pStreamDestroyedHandler);
+//    var dataToSend={
+//        type: "GET",
+//        url: WP_ADMIN_URL,
+//        dataType: 'json',
+//        data: 'action=dmst_chatRoom_p2pToken',
+//        success: function(data){
+//            if(!(data=="")) {
+//                p2pToken=data;
+//                stopPublishing();
+//                p2pSession.connect(apiKey,p2pToken);
+//                p2pStartPublishing();
+//            }
+//        }
+//    };
+//    jQuery.ajax(dataToSend);
+//}
+
 function p2pStartPublishing() {
+    p2pSession=TB.initSession(p2pSessionId);
+    p2pSession.addEventListener('sessionConnected', p2pSessionConnectedHandler);
+    p2pSession.addEventListener('sessionDisconnected', p2pSessionDisconnectedHandler);
+    p2pSession.addEventListener('connectionCreated', p2pConnectionCreatedHandler);
+    p2pSession.addEventListener('connectionDestroyed', p2pConnectionDestroyedHandler);
+    p2pSession.addEventListener('streamCreated', p2pStreamCreatedHandler);
+    p2pSession.addEventListener('streamDestroyed', p2pStreamDestroyedHandler);
+    p2pSession.connect(apiKey,p2pToken);
     if (!p2pPublisher) {
         var parentDiv = document.getElementById("p2pMe");
         var publisherDiv = document.createElement('div');
@@ -284,14 +288,16 @@ function p2pStartPublishing() {
             height: VIDEO_HEIGHT
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
-        p2pSession.publish(p2pPublisher);
+    //        p2pSession.publish(p2pPublisher);
     }
 }
 
 function p2pStopPublishing() {
-    if (p2pPublisher) {
-        p2pSession.unpublish(p2pPublisher);
-    }
+    // if (p2pPublisher) {
+    //     p2pSession.unpublish(p2pPublisher);
+    // }
+    p2pSession.disconnect();
+    sessionReset();
     p2pPublisher = null;
     startPublishing();
 }
@@ -300,9 +306,11 @@ function p2pStopPublishing() {
 
 function p2pSessionConnectedHandler(event) {
     // Subscribe to all streams currently in the Session
+    p2pSession.publish(p2pPublisher);
     for (var i = 0; i < event.streams.length; i++) {
         p2pAddStream(event.streams[i]);
     }
+    stopPublishing();
 }
 
 function p2pStreamCreatedHandler(event) {
