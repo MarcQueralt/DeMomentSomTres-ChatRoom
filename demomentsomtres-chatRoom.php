@@ -309,8 +309,8 @@ function dmst_chatRoom_to_chatRoom() {
             $p2pSession = $apiObj->createSession('', array(SessionPropertyConstants::P2P_PREFERENCE => "enabled"));
             $p2pSessionId = $p2pSession->getSessionId();
             $p2pTokenModerator = $apiObj->generateToken($p2pSessionId, RoleConstants::PUBLISHER, NULL, '');
-//            $p2pTokenPublisher = $apiObj->generateToken($p2pSessionId, RoleConstants::PUBLISHER, NULL, '');
-            $p2pTokenPublisher = $p2pTokenModerator;
+            $p2pTokenPublisher = $apiObj->generateToken($p2pSessionId, RoleConstants::PUBLISHER, NULL, '');
+//            $p2pTokenPublisher = $p2pTokenModerator;
             set_transient(DMST_CHATROOM_P2P_SESSIONID, $p2pSessionId, DMST_CHATROOM_TRANSCIENT_LIVE);
             set_transient(DMST_CHATROOM_P2P_TOKEN_MODERATOR, $p2pTokenModerator, DMST_CHATROOM_TRANSCIENT_LIVE);
             set_transient(DMST_CHATROOM_P2P_TOKEN_PUBLISHER, $p2pTokenPublisher, DMST_CHATROOM_TRANSCIENT_LIVE);

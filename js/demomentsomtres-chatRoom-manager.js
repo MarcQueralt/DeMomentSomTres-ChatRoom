@@ -105,6 +105,7 @@ function startPublishing() {
             height: VIDEO_HEIGHT
         };
         publisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        publisher.publishAudio(false);
         session.publish(publisher);
         jQuery('#myCamera').addClass('dmst_chatRoom_open');
         jQuery('#myCamera').removeClass('dmst_chatRoom_standby');
