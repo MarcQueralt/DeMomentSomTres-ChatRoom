@@ -1,7 +1,11 @@
 #subscribers {
     display:block;
-    border:1px solid #111;
     min-height:100px;
+}
+#myCamera {
+    min-height:120px;
+    min-width:160px;
+    display:block;
 }
 div.waiting_list, div.waiting_list_you {
     display: inline-block;
@@ -9,9 +13,6 @@ div.waiting_list, div.waiting_list_you {
 }
 div.waiting_list_you {
     font-weight: bold;
-}
-#myCamera {
-    min-height: 100px;
 }
 .dmst_chatRoom_closed {
     background-color: red;
@@ -21,4 +22,8 @@ div.waiting_list_you {
 }
 .dmst_chatRoom_standby {
     background-color: orange;
+}
+.dmst_chatRoom_in_private {
+    width:160px;
+    height:120px;
 }

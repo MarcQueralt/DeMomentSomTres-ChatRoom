@@ -4,8 +4,7 @@
 
 TB.addEventListener("exception", exceptionHandler);		
 if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
-    alert("You don't have the minimum requirements to run this application."
-        + "Please upgrade to the latest version of Flash.");
+    alert(ERROR_REQUIREMENTS);
 } else {
     session = TB.initSession(sessionId);	// Initialize session
 
@@ -32,7 +31,7 @@ if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
     jQuery('#unpublishLink').click(function(){
         stopPublishing()
     });
-    connect();
+//    connect();
 }
 jQuery("#refreshLink").click(function() {
     refresh_list(); 
@@ -43,6 +42,10 @@ jQuery("#goLink").click(function() {
 jQuery("#p2pStopLink").click(function() {
     p2pStopPublishing();
 });
+//jQuery("#p2pStopLink").hide();
+var WL;
+var WLprevious=0;
+waitingListMonitor();
 refresh_list();
 
 //--------------------------------------
@@ -110,6 +113,7 @@ function startPublishing() {
         jQuery('#myCamera').addClass('dmst_chatRoom_open');
         jQuery('#myCamera').removeClass('dmst_chatRoom_standby');
         jQuery('#myCamera').removeClass('dmst_chatRoom_closed');
+        jQuery('#myCamera').removeClass('dmst_chatRoom_in_private');
         jQuery('#unpublishLink').show();
         jQuery('#publishLink').hide();
     }
@@ -179,8 +183,7 @@ function connectionCreatedHandler(event) {
 		*/
 function exceptionHandler(event) {
     if (event.code == 1013) {
-        document.body.innerHTML = "This page is trying to connect a third client to an OpenTok peer-to-peer session. "
-    + "Only two clients can connect to peer-to-peer sessions.";
+        jQuery("#messages").html(P2P_1013_MESSAGE);
     } else {
         alert("Exception: " + event.code + "::" + event.message);
     }
@@ -238,6 +241,8 @@ function waiting_list_go(pos) {
                 p2pSessionId=result['id'];
                 p2pToken=result['token'];
                 p2pStartPublishing();
+//                jQuery("#goLink").hide();
+//                jQuery("#p2pStopLink").show();
             }
         }
     };
@@ -285,10 +290,11 @@ function p2pStartPublishing() {
         publisherDiv.setAttribute('id', 'opentok_p2p_publisher');
         parentDiv.appendChild(publisherDiv);
         var publisherProps = {
-            width: VIDEO_WIDTH, 
-            height: VIDEO_HEIGHT
+            width: VIDEO_WIDTH/5, 
+            height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        jQuery('#myCamera').AddClass('dmst_chatRoom_in_private');
     //        p2pSession.publish(p2pPublisher);
     }
 }
@@ -301,6 +307,7 @@ function p2pStopPublishing() {
     sessionReset();
     p2pPublisher = null;
     startPublishing();
+//    jQuery("#p2pStopLink").hide();
 }
 
 // P2P EVENT HANDLERS
@@ -369,4 +376,21 @@ function sessionReset() {
         }
     };
     jQuery.ajax(dataToSend);    
+}
+
+function waitingListMonitor(){
+    WL=jQuery("#waitingList").children().size();
+//    if(WL>0) {
+//        jQuery("#goLink").show();
+//    } else {
+//        jQuery("#goLink").hide();
+//    }
+    if((WL>0)&&(WLprevious==0)){
+        WLprevious=WL;
+        jQuery("#alarm").get(0).play();
+        window.setTimeout(waitingListMonitor, 30000);
+    } else{
+        WLprevious=WL;
+        window.setTimeout(waitingListMonitor, 1000);
+    }
 }

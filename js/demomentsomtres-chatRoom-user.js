@@ -7,8 +7,7 @@ containerDiv.style.width=VIDEO_WIDTH+"px";
 containerDiv.style.display="block";
 TB.addEventListener("exception", exceptionHandler);		
 if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
-    alert("You don't have the minimum requirements to run this application."
-        + "Please upgrade to the latest version of Flash.");
+    alert(ERROR_REQUIREMENTS);
 } else {
     session = TB.initSession(sessionId);	// Initialize session
 
@@ -28,7 +27,7 @@ jQuery("#turnLink").click(function(){
 jQuery("#refreshLink").click(function() {
     refresh_list(); 
 });
-wait_your_turn();
+check_your_turn();
 refresh_list();
 
 //--------------------------------------
@@ -52,6 +51,7 @@ function ask_your_turn() {
         success: function(data){
             jQuery('#messages').html(data);
             refresh_list();
+            wait_your_turn();
         }
     };
     jQuery.ajax(dataToSend);
@@ -67,11 +67,26 @@ function wait_your_turn() {
             if(data==userId) {
                 prepare_p2p();
             } else {
-                window.setTimeout(wait_your_turn,1000);                
+                window.setTimeout(wait_your_turn,5000);                
             }
         },
         error: function(XMLHttpRequest,textStatus,errorThrown) {
-            window.setTimeout(wait_your_turn,1000);
+            window.setTimeout(wait_your_turn,5000);
+        }
+    };
+    jQuery.ajax(dataToSend);        
+}
+
+function check_your_turn() {
+    var dataToSend={
+        type: "GET",
+        url: WP_ADMIN_URL,
+        dataType: 'html',
+        data: 'action=dmst_chatRoom_in_chatRoom',
+        success: function(data){
+            if(data==userId) {
+                prepare_p2p();
+            }
         }
     };
     jQuery.ajax(dataToSend);        
@@ -172,8 +187,7 @@ function connectionCreatedHandler(event) {
  */
 function exceptionHandler(event) {
     if (event.code == 1013) {
-        document.body.innerHTML = "This page is trying to connect a third client to an OpenTok peer-to-peer session. "
-    + "Only two clients can connect to peer-to-peer sessions.";
+        jQuery("#messages").html(P2P_1013_MESSAGE);
     } else {
     //        alert("Exception: " + event.code + "::" + event.message);
     }
@@ -261,8 +275,8 @@ function p2pStartPublishing() {
         publisherDiv.setAttribute('id', 'opentok_p2p_publisher');
         parentDiv.appendChild(publisherDiv);
         var publisherProps = {
-            width: VIDEO_WIDTH, 
-            height: VIDEO_HEIGHT
+            width: VIDEO_WIDTH/5, 
+            height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
     //        p2pSession.publish(p2pPublisher);

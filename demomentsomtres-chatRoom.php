@@ -4,7 +4,7 @@
   Plugin Name: DeMomentSomTres ChatRoom
   Plugin URI: http://demomentsomtres.com/catala
   Description: This plugin allows you to quickly and easily host ChatRooms in your blog. Get up and running in no time with the OpenTok platform.
-  Version: 1.0.1
+  Version: 1.0.2
   Author: DeMomentSomTres
   Author URI: http://demomentsomtres.com
   License: GPLv2 or later
@@ -146,6 +146,8 @@ function DMST_ChatRoom_sc() {
     $cos.='var VIDEO_HEIGHT = 240;' . "\n";
     $cos.='var WP_ADMIN_URL = "' . $ajaxurl . '";' . "\n";
     $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '";' . "\n";
+    $cos.='var P2P_1013_MESSAGE="'.__('Trying to connect to a P2P session that has 2 users',DMST_CHATROOM_TEXT_DOMAIN).'";';
+    $cos.='var ERROR_REQUIREMENTS="'.__('You don\'t have the minimum requirements to run this application. Please upgrade to the latest version of Flash.',DMST_CHATROOM_TEXT_DOMAIN).'";';
     if (!$dmst_chatroom_isModerator):
         $cos.='var userId = "' . dmst_get_user_id() . '";' . "\n";
     endif;
@@ -182,6 +184,9 @@ function DMST_ChatRoom_sc() {
     $cos.='</div> <!--listAccess-->' . "\n";
     $cos.='<div id="p2p">' . "\n" . '<div id="p2pMe"></div>' . "\n" . '<div id="p2pYou"></div>' . "\n" . '</div>' . "\n";
     $cos.='<div id="opentok_console"></div>' . "\n";
+    $cos.='<audio preload="true" id="alarm">';
+    $cos.='<source src="'.plugins_url('sound/alarm.mp3',__FILE__).'" type="audio/mpeg">';
+    $cos.='</audio>';
     return $cos;
 }
 

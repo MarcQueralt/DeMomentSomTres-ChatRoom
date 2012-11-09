@@ -3,7 +3,7 @@ Contributors: marcqueralt
 Tags: video, chat, widget, plugin, live, live video, google hangouts, hangouts, discussion, videochat, video chat, video conference, free, webcam, video broadcast, social networking, community, networks, talk show, TokBox, OpenTok, chatroom
 Requires at least: 3.0
 Tested up to: 3.4
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 
 Host chatrooms and public streaming directly on your WordPress blog.
 
@@ -20,6 +20,9 @@ Video Chat using Video Embed functionality.
 
 **For More Information**
 
+**Sound info**
+Sound file by http://soundcloud.com/chiaweichen0705/amb-earthquake-alarm-1
+
 == Installation ==
 
 You can download and install the DeMomentSomTres-ChatRoom using the built in WordPress plugin installer. 
@@ -33,6 +36,11 @@ Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in
 
 
 == Changelog ==
+
+= 1.0.2 =
+* Private screens redesign
+* p2pException message personalization
+* AJAX optimization
 
 = 1.0.1 =
 * [New] Using OpenTok API
