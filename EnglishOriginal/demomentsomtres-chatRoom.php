@@ -4,7 +4,7 @@
   Plugin Name: DeMomentSomTres ChatRoom
   Plugin URI: http://demomentsomtres.com/catala
   Description: This plugin allows you to quickly and easily host ChatRooms in your blog. Get up and running in no time with the OpenTok platform.
-  Version: 1.0.5
+  Version: 1.0.2
   Author: DeMomentSomTres
   Author URI: http://demomentsomtres.com
   License: GPLv2 or later
@@ -147,29 +147,29 @@ function DMST_ChatRoom_sc() {
     $cos.='var VIDEO_HEIGHT = 333;' . "\n";
     $cos.='var WP_ADMIN_URL = "' . $ajaxurl . '";' . "\n";
     $cos.='var CSS_FILE="' . plugins_url('demomentsomtres-chatRoom.css', __FILE__) . '";' . "\n";
-    $cos.='var P2P_1013_MESSAGE="' . __('Estàs intentant connectar a una sessió privada que té 2 usuaris actius.', DMST_CHATROOM_TEXT_DOMAIN) . '";';
-    $cos.='var ERROR_REQUIREMENTS="' . __('El teu ordinador no compta amb els requeriments mínims per executar la botiga. Si et plau, actualitza el flash.', DMST_CHATROOM_TEXT_DOMAIN) . '";';
+    $cos.='var P2P_1013_MESSAGE="' . __('Trying to connect to a P2P session that has 2 users', DMST_CHATROOM_TEXT_DOMAIN) . '";';
+    $cos.='var ERROR_REQUIREMENTS="' . __('You don\'t have the minimum requirements to run this application. Please upgrade to the latest version of Flash.', DMST_CHATROOM_TEXT_DOMAIN) . '";';
     if (!$dmst_chatroom_isModerator):
         $cos.='var userId = "' . dmst_get_user_id() . '";' . "\n";
     endif;
     $cos.='</script>' . "\n";
     if ($dmst_chatroom_isModerator):
         $cos.='<div id="DeMomentSomTres-chatRoom-links">' . "\n";
-        $cos.='<input type="button" value="' . __('Obre la botiga', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="connectLink" />';
-        $cos.='<input type="button" value="' . __('Activa la càmera', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="publishLink" />';
-        $cos.='<input type="button" value="' . __('Atura la càmera', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="unpublishLink" />';
-        $cos.='<input type="button" value="' . __('Tanca la botiga', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="disconnectLink" />';
+        $cos.='<input type="button" value="' . __('Connect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="connectLink" />';
+        $cos.='<input type="button" value="' . __('Start Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="publishLink" />';
+        $cos.='<input type="button" value="' . __('Stop Publishing', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="unpublishLink" />';
+        $cos.='<input type="button" value="' . __('Disconnect', DMST_CHATROOM_TEXT_DOMAIN) . '" id ="disconnectLink" />';
         $cos.='</div>' . "\n";
         if ($shopIsOpen):
-            $cos.='<div id="myCamera" class="publisherContainer dmst_chatRoom_standby"></div>' . "\n";
+            $cos.='<div id="myCamera" class="publisherContainer"></div>' . "\n";
         else:
-            $cos.='<div id="myCamera" class="publisherContainer dmst_chatRoom_closed"></div>' . "\n";
+            $cos.='<div id="myCamera" class="publisherContainer" class="dmst_chatRoom_shop_closed"></div>' . "\n";
         endif;
     else:
         if ($shopIsOpen):
             $cos.='<div id="subscribers"></div>' . "\n";
         else:
-            $cos.='<div id="subscribers" class="dmst_chatRoom_closed"></div>' . "\n";
+            $cos.='<div id="subscribers" class="dmst_chatRoom_shop_closed"></div>' . "\n";
         endif;
     endif;
     $cos.='<div id="DeMomentSomTres-chatRoom-messages"></div>' . "\n";
@@ -181,11 +181,11 @@ function DMST_ChatRoom_sc() {
     $cos.='<div id="DeMomentSomTres-chatRoom-listAccess">' . "\n";
     $cos.='<div id="DeMomentSomTres-chatRoom-waitingList"></div>' . "\n";
     if ($dmst_chatroom_isModerator):
-        $cos.='<input type="button" value="' . __('Despatxar', DMST_CHATROOM_TEXT_DOMAIN) . '" id="goLink" />';
-        $cos.='<input type="button" value="' . __('Tornar a la botiga', DMST_CHATROOM_TEXT_DOMAIN) . '" id="p2pStopLink" />';
+        $cos.='<input type="button" value="' . __('Go', DMST_CHATROOM_TEXT_DOMAIN) . '" id="goLink" />';
+        $cos.='<input type="button" value="' . __('p2p Stop', DMST_CHATROOM_TEXT_DOMAIN) . '" id="p2pStopLink" />';
     else:
-        $cos.='<input type="button" value="' . __('Demana tanda', DMST_CHATROOM_TEXT_DOMAIN) . '" id="turnLink" />';
-        $cos.='<input type="button" value="' . __('Refresca', DMST_CHATROOM_TEXT_DOMAIN) . '" id="refreshLink" />';
+        $cos.='<input type="button" value="' . __('Ask your Turn', DMST_CHATROOM_TEXT_DOMAIN) . '" id="turnLink" />';
+        $cos.='<input type="button" value="' . __('Refresh', DMST_CHATROOM_TEXT_DOMAIN) . '" id="refreshLink" />';
     endif;
     $cos.='</div> <!--DeMomentSomTres-chatRoom-listAccess-->' . "\n";
     $cos.='<div id="p2p">' . "\n" . '<div id="p2pMe"></div>' . "\n" . '<div id="p2pYou"></div>' . "\n" . '</div>' . "\n";
@@ -207,7 +207,7 @@ function dmst_chatRoom_enqueue_jquery() {
  */
 function dmst_chatRoom_open() {
     set_transient(DMST_CHATROOM_OPEN, true, DMST_CHATROOM_TRANSCIENT_LIVE);
-    echo __('La botiga està oberta', DMST_CHATROOM_TEXT_DOMAIN);
+    echo __('ChatRoom is open', DMST_CHATROOM_TEXT_DOMAIN);
     die();
 }
 
@@ -218,7 +218,7 @@ function dmst_chatRoom_open() {
  */
 function dmst_chatRoom_close() {
     set_transient(DMST_CHATROOM_OPEN, false, DMST_CHATROOM_TRANSCIENT_LIVE);
-    echo __('La botiga està tancada', DMST_CHATROOM_TEXT_DOMAIN);
+    echo __('ChatRoom is closed', DMST_CHATROOM_TEXT_DOMAIN);
     die();
 }
 
@@ -252,12 +252,12 @@ function dmst_chatRoom_add_to_queue() {
         if (!in_array($id, $list)):
             array_push($list, $id);
             set_transient(DMST_CHATROOM_WAITING_LIST, $list, DMST_CHATROOM_TRANSCIENT_LIVE);
-            echo __('Ja tens tanda', DMST_CHATROOM_TEXT_DOMAIN);
+            echo __('You\'ve been added to the list', DMST_CHATROOM_TEXT_DOMAIN);
         else:
-            echo __('No pots demanar tanda dues vegades', DMST_CHATROOM_TEXT_DOMAIN);
+            echo __('You cannot add yourself twice', DMST_CHATROOM_TEXT_DOMAIN);
         endif;
     else:
-        echo __('ERROR: cal que el sistema especifiqui un identificador', DMST_CHATROOM_TEXT_DOMAIN);
+        echo __('ERROR: You must specify an id', DMST_CHATROOM_TEXT_DOMAIN);
     endif;
     die();
 }
@@ -357,11 +357,11 @@ function dmst_chatRoom_in_list() {
         endif;
         $pos = array_search($id, $list);
         if ($pos === false):
-            echo __("No ets a la llista d'espera", DMST_CHATROOM_TEXT_DOMAIN);
+            echo __('Your not in the waiting list', DMST_CHATROOM_TEXT_DOMAIN);
         else:
             $keys = array_keys($list);
             $posi = array_search($pos, $keys);
-            echo __("Ets a la llista d'espera a la posició ", DMST_CHATROOM_TEXT_DOMAIN);
+            echo __('Your position in the waiting list is', DMST_CHATROOM_TEXT_DOMAIN);
             echo ' ';
             echo $posi;
         endif;
@@ -420,7 +420,7 @@ function dmst_chatRoom_pretty_waiting_list() {
     for ($i = 0; $i < count($list); $i++):
         if ($i == $posi):
             echo '<div class="waiting_list_you">';
-            echo '<span class="you">' . __('Tu', DMST_CHATROOM_TEXT_DOMAIN) . '</span>';
+            echo '<span class="you">' . __('You', DMST_CHATROOM_TEXT_DOMAIN) . '</span>';
 //          echo $i + 1;
             echo '</div>';
         else:

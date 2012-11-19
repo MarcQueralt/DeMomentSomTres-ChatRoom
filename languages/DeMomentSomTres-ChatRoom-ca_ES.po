@@ -1,0 +1,157 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: DeMomentSomTres ChatRoom v1.0.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2012-11-15 01:04:40+0000\n"
+"Last-Translator: admin <dms3@demomentsomtres.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: Catalan\n"
+"X-Poedit-Country: SPAIN\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-Bookmarks: \n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Textdomain-Support: yes"
+
+#: admin.php:14
+#: admin.php:25
+#@ DeMomentSomTres-ChatRoom
+msgid "DMS3-ChatRoom"
+msgstr "DMS3-VideoXat"
+
+#: admin.php:29
+#@ DeMomentSomTres-ChatRoom
+msgid "Save Changes"
+msgstr "Desa canvis"
+
+#: admin.php:44
+#@ DeMomentSomTres-ChatRoom
+msgid "OpenTok API Key"
+msgstr "OpenTok API Key"
+
+#: admin.php:45
+#@ DeMomentSomTres-ChatRoom
+msgid "OpenTok Api Secret"
+msgstr "OpenTok Api Secret"
+
+#: admin.php:46
+#@ DeMomentSomTres-ChatRoom
+msgid "Debug Mode"
+msgstr "Mode depuració (debug) "
+
+#: admin.php:47
+#@ DeMomentSomTres-ChatRoom
+msgid "OpenTok Settings"
+msgstr "Configuració OpenTok"
+
+#: admin.php:68
+#@ DeMomentSomTres-ChatRoom
+msgid "Replace with your API key. See <a href=\"http://www.tokbox.com\" target=\"_blank\">http://www.tokbox.com/</a>."
+msgstr "Substitueix per la teva API key. Mira <a href=\"http://www.tokbox.com\" target=\"_blank\">http://www.tokbox.com/</a>."
+
+#: admin.php:80
+#@ DeMomentSomTres-ChatRoom
+msgid "Replace with your API secret."
+msgstr "Substituir amb la teva API secret."
+
+#: admin.php:92
+#@ DeMomentSomTres-ChatRoom
+msgid "1 means debug activated"
+msgstr "1 significa mode depuració activat."
+
+#: demomentsomtres-chatRoom.php:160
+#@ DeMomentSomTres-ChatRoom
+msgid "Trying to connect to a P2P session that has 2 users"
+msgstr "Intentant establir una connexió a una sessió privada amb 2 usuaris connectats. "
+
+#: demomentsomtres-chatRoom.php:161
+#@ DeMomentSomTres-ChatRoom
+msgid "You don't have the minimum requirements to run this application. Please upgrade to the latest version of Flash."
+msgstr "El teu ordinador no compleix amb els requisits mínims per executar l'aplicació. Actualitza a la darrera versió de Flash."
+
+#: demomentsomtres-chatRoom.php:168
+#@ DeMomentSomTres-ChatRoom
+msgid "Connect"
+msgstr "Obrir la connexió"
+
+#: demomentsomtres-chatRoom.php:169
+#@ DeMomentSomTres-ChatRoom
+msgid "Start Publishing"
+msgstr "Iniciar la transmissió"
+
+#: demomentsomtres-chatRoom.php:170
+#@ DeMomentSomTres-ChatRoom
+msgid "Stop Publishing"
+msgstr "Aturar la transmissió"
+
+#: demomentsomtres-chatRoom.php:171
+#@ DeMomentSomTres-ChatRoom
+msgid "Disconnect"
+msgstr "Desconnectar"
+
+#: demomentsomtres-chatRoom.php:194
+#@ DeMomentSomTres-ChatRoom
+msgid "Go"
+msgstr "Despatxar"
+
+#: demomentsomtres-chatRoom.php:195
+#@ DeMomentSomTres-ChatRoom
+msgid "p2p Stop"
+msgstr "Deixar de despatxar"
+
+#: demomentsomtres-chatRoom.php:197
+#@ DeMomentSomTres-ChatRoom
+msgid "Ask your Turn"
+msgstr "Demana tanda"
+
+#: demomentsomtres-chatRoom.php:198
+#@ DeMomentSomTres-ChatRoom
+msgid "Refresh"
+msgstr "Refrescar"
+
+#: demomentsomtres-chatRoom.php:220
+#@ DeMomentSomTres-ChatRoom
+msgid "ChatRoom is open"
+msgstr "La botiga està oberta"
+
+#: demomentsomtres-chatRoom.php:231
+#@ DeMomentSomTres-ChatRoom
+msgid "ChatRoom is closed"
+msgstr "La botiga està tancada"
+
+#: demomentsomtres-chatRoom.php:265
+#@ DeMomentSomTres-ChatRoom
+msgid "You've been added to the list"
+msgstr "Ja ets a la cua"
+
+#: demomentsomtres-chatRoom.php:267
+#@ DeMomentSomTres-ChatRoom
+msgid "You cannot add yourself twice"
+msgstr "Si ja ets a la llista, no demanis una altra tanda."
+
+#: demomentsomtres-chatRoom.php:270
+#@ DeMomentSomTres-ChatRoom
+msgid "ERROR: You must specify an id"
+msgstr "ERROR: s'ha d'especificar un identificador."
+
+#: demomentsomtres-chatRoom.php:370
+#@ DeMomentSomTres-ChatRoom
+msgid "Your not in the waiting list"
+msgstr "No ets a la cua"
+
+#: demomentsomtres-chatRoom.php:374
+#@ DeMomentSomTres-ChatRoom
+msgid "Your position in the waiting list is"
+msgstr "Ocupes la posició següent de la llsita d'espera."
+
+#: demomentsomtres-chatRoom.php:433
+#@ DeMomentSomTres-ChatRoom
+msgid "You"
+msgstr "Tu"
+

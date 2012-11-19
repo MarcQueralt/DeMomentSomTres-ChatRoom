@@ -3,7 +3,7 @@ Contributors: marcqueralt
 Tags: video, chat, widget, plugin, live, live video, google hangouts, hangouts, discussion, videochat, video chat, video conference, free, webcam, video broadcast, social networking, community, networks, talk show, TokBox, OpenTok, chatroom
 Requires at least: 3.0
 Tested up to: 3.4
-Stable tag: 1.0.2
+Stable tag: 1.0.4
 
 Host chatrooms and public streaming directly on your WordPress blog.
 
@@ -36,6 +36,19 @@ Once installed, you will need to activate the DeMomentSomTres-ChatRoom plugin in
 
 
 == Changelog ==
+= 1.0.5 =
+* Standby Class mismatched
+
+= 1.0.4 =
+* Closed initial class not properly seen.
+= 1.0.3 =
+* Messages div moved beneath waiting list and renamed to #DeMomentSomTres-chatRoom-messages
+* Additional container div
+* div #links renamed to #DeMomentSomTres-chatRoom-links
+* div #listAccess renamed to DeMomentSomTres-chatRoom-listAccess
+* div #waitingList renamed to DeMomentSomTres-chatRoom-waitingList
+* skip number in your ticket at the waiting list
+* hide and show p2p area when needed
 
 = 1.0.2 =
 * Private screens redesign

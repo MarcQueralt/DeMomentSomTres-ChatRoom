@@ -15,13 +15,13 @@ div.waiting_list_you {
     font-weight: bold;
 }
 .dmst_chatRoom_closed {
-    background-color: red;
+     /*background-color: red;*/
 }
 .dmst_chatRoom_open {
-    background-color: green;
+    /*background-color: green;*/
 }
 .dmst_chatRoom_standby {
-    background-color: orange;
+    /*background-color: orange;*/
 }
 .dmst_chatRoom_in_private {
     width:160px;

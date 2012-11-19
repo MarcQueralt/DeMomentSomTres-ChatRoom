@@ -38,13 +38,16 @@ jQuery("#refreshLink").click(function() {
 });
 jQuery("#goLink").click(function() {
     waiting_list_go(1);
+    jQuery("#p2p").show();
 });
 jQuery("#p2pStopLink").click(function() {
     p2pStopPublishing();
+    jQuery("#p2p").hide();
 });
 //jQuery("#p2pStopLink").hide();
 var WL;
 var WLprevious=0;
+jQuery("#p2p").hide();
 waitingListMonitor();
 refresh_list();
 
@@ -59,10 +62,10 @@ function connect() {
         dataType: 'html',
         data: 'action=dmst_chatRoom_open',
         success: function(data){
-            jQuery('#messages').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-messages').html(data);
         },
         error: function(data){
-            jQuery('#messages').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-messages').html(data);
         }
     };
     jQuery.ajax(dataToSend);
@@ -78,11 +81,11 @@ function disconnect() {
         dataType: 'html',
         data: 'action=dmst_chatRoom_close',
         success: function(data){
-            jQuery('#messages').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-messages').html(data);
             sessionReset();
         },
         error: function(data){
-            jQuery('#messages').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-messages').html(data);
         }
     };
     jQuery.ajax(dataToSend);
@@ -183,7 +186,7 @@ function connectionCreatedHandler(event) {
 		*/
 function exceptionHandler(event) {
     if (event.code == 1013) {
-        jQuery("#messages").html(P2P_1013_MESSAGE);
+        jQuery("#DeMomentSomTres-chatRoom-messages").html(P2P_1013_MESSAGE);
     } else {
         alert("Exception: " + event.code + "::" + event.message);
     }
@@ -219,7 +222,7 @@ function refresh_list() {
         dataType: 'html',
         data: 'action=dmst_chatRoom_pretty_list',
         success: function(data){
-            jQuery('#waitingList').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-waitingList').html(data);
             window.setTimeout(refresh_list,5000);
         },
         error: function(XMLHttpRequest,textStatus,errorThrown) {
@@ -306,7 +309,7 @@ function p2pStopPublishing() {
     p2pSession.disconnect();
     sessionReset();
     p2pPublisher = null;
-    startPublishing();
+//    startPublishing();
 //    jQuery("#p2pStopLink").hide();
 }
 
@@ -379,7 +382,7 @@ function sessionReset() {
 }
 
 function waitingListMonitor(){
-    WL=jQuery("#waitingList").children().size();
+    WL=jQuery("#DeMomentSomTres-chatRoom-waitingList").children().size();
 //    if(WL>0) {
 //        jQuery("#goLink").show();
 //    } else {

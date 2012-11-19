@@ -27,6 +27,7 @@ jQuery("#turnLink").click(function(){
 jQuery("#refreshLink").click(function() {
     refresh_list(); 
 });
+jQuery("#p2p").hide();
 check_your_turn();
 refresh_list();
 
@@ -49,7 +50,7 @@ function ask_your_turn() {
         dataType: 'html',
         data: 'action=dmst_chatRoom_add_to_queue&id='+userId,
         success: function(data){
-            jQuery('#messages').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-messages').html(data);
             refresh_list();
             wait_your_turn();
         }
@@ -187,7 +188,7 @@ function connectionCreatedHandler(event) {
  */
 function exceptionHandler(event) {
     if (event.code == 1013) {
-        jQuery("#messages").html(P2P_1013_MESSAGE);
+        jQuery("#DeMomentSomTres-chatRoom-messages").html(P2P_1013_MESSAGE);
     } else {
     //        alert("Exception: " + event.code + "::" + event.message);
     }
@@ -226,12 +227,12 @@ function dmst_check_status() {
                 jQuery("#subscribers").addClass("dmst_chatRoom_standby");
                 jQuery("#subscribers").removeClass("dmst_chatRoom_closed");
                 jQuery("#subscribers").removeClass("dmst_chatRoom_open");
-                jQuery('#listAccess').show();
+                jQuery('#DeMomentSomTres-chatRoom-listAccess').show();
             } else {
                 jQuery("#subscribers").removeClass("dmst_chatRoom_standby");
                 jQuery("#subscribers").addClass("dmst_chatRoom_closed");
                 jQuery("#subscribers").removeClass("dmst_chatRoom_open");
-                jQuery('#listAccess').hide();
+                jQuery('#DeMomentSomTres-chatRoom-listAccess').hide();
             }
         }
     };
@@ -249,7 +250,7 @@ function refresh_list() {
         dataType: 'html',
         data: 'action=dmst_chatRoom_pretty_list&id='+userId,
         success: function(data){
-            jQuery('#waitingList').html(data);
+            jQuery('#DeMomentSomTres-chatRoom-waitingList').html(data);
             window.setTimeout(refresh_list,10000);
         },
         error: function(XMLHttpRequest,textStatus,errorThrown) {
@@ -279,6 +280,7 @@ function p2pStartPublishing() {
             height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        jQuery("#p2p").show();
     //        p2pSession.publish(p2pPublisher);
     }
 }
@@ -298,6 +300,7 @@ function p2pSessionConnectedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         p2pAddStream(event.streams[i]);
     }
+    jQuery("#p2p").show();
 }
 
 function p2pStreamCreatedHandler(event) {
@@ -305,18 +308,21 @@ function p2pStreamCreatedHandler(event) {
     for (var i = 0; i < event.streams.length; i++) {
         p2pAddStream(event.streams[i]);
     }
+    jQuery("#p2p").show();
 }
 
 function p2pStreamDestroyedHandler(event) {
     // This signals that a stream was destroyed. Any Subscribers will automatically be removed.
     // This default behaviour can be prevented using event.preventDefault()
     p2pSession.disconnect();
+    jQuery("#p2p").hide();
 }
 
 function p2pSessionDisconnectedHandler(event) {
     // This signals that the user was disconnected from the Session. Any subscribers and publishers
     // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
     p2pPublisher = null;
+    jQuery("#p2p").hide();
 }
 
 function p2pConnectionDestroyedHandler(event) {
