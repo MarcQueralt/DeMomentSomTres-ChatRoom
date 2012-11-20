@@ -108,7 +108,8 @@ function startPublishing() {
         parentDiv.appendChild(publisherDiv);
         var publisherProps = {
             width: VIDEO_WIDTH, 
-            height: VIDEO_HEIGHT
+            height: VIDEO_HEIGHT,
+            reportMicLevels: true
         };
         publisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
         publisher.publishAudio(false);
@@ -244,8 +245,8 @@ function waiting_list_go(pos) {
                 p2pSessionId=result['id'];
                 p2pToken=result['token'];
                 p2pStartPublishing();
-//                jQuery("#goLink").hide();
-//                jQuery("#p2pStopLink").show();
+            //                jQuery("#goLink").hide();
+            //                jQuery("#p2pStopLink").show();
             }
         }
     };
@@ -297,7 +298,8 @@ function p2pStartPublishing() {
             height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
-        jQuery('#myCamera').AddClass('dmst_chatRoom_in_private');
+        p2pPublisher.setMicrophoneGain(75);
+        jQuery('#myCamera').addClass('dmst_chatRoom_in_private');
     //        p2pSession.publish(p2pPublisher);
     }
 }
@@ -306,9 +308,13 @@ function p2pStopPublishing() {
     // if (p2pPublisher) {
     //     p2pSession.unpublish(p2pPublisher);
     // }
-    p2pSession.disconnect();
-    sessionReset();
+    if(p2pSession) {
+        p2pSession.disconnect();
+        sessionReset();
+    }
     p2pPublisher = null;
+    jQuery("#p2pYou").html('');
+    jQuery("#p2pMe").html();
 //    startPublishing();
 //    jQuery("#p2pStopLink").hide();
 }
@@ -383,11 +389,11 @@ function sessionReset() {
 
 function waitingListMonitor(){
     WL=jQuery("#DeMomentSomTres-chatRoom-waitingList").children().size();
-//    if(WL>0) {
-//        jQuery("#goLink").show();
-//    } else {
-//        jQuery("#goLink").hide();
-//    }
+    //    if(WL>0) {
+    //        jQuery("#goLink").show();
+    //    } else {
+    //        jQuery("#goLink").hide();
+    //    }
     if((WL>0)&&(WLprevious==0)){
         WLprevious=WL;
         jQuery("#alarm").get(0).play();

@@ -280,6 +280,7 @@ function p2pStartPublishing() {
             height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
+        p2pPublisher.setMicrophoneGain(75);
         jQuery("#p2p").show();
     //        p2pSession.publish(p2pPublisher);
     }
