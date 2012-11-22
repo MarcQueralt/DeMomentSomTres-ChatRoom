@@ -299,15 +299,15 @@ function p2pStartPublishing() {
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
         p2pPublisher.setMicrophoneGain(75);
-        jQuery('#myCamera').addClass('dmst_chatRoom_in_private');
+    //        jQuery('#myCamera').addClass('dmst_chatRoom_in_private');
     //        p2pSession.publish(p2pPublisher);
     }
 }
 
 function p2pStopPublishing() {
-    // if (p2pPublisher) {
-    //     p2pSession.unpublish(p2pPublisher);
-    // }
+    if (p2pPublisher) {
+        p2pSession.unpublish(p2pPublisher);
+    }
     if(p2pSession) {
         p2pSession.disconnect();
         sessionReset();
@@ -338,18 +338,26 @@ function p2pStreamCreatedHandler(event) {
 }
 
 function p2pStreamDestroyedHandler(event) {
-// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
-// This default behaviour can be prevented using event.preventDefault()
+    // This signals that a stream was destroyed. Any Subscribers will automatically be removed.
+    // This default behaviour can be prevented using event.preventDefault()
+    p2pPublisher = null; /*MQB20121120*/
+    jQuery("#p2pYou").html('');/*MQB20121120*/
+    jQuery("#p2pMe").html();/*MQB20121120*/
 }
 
 function p2pSessionDisconnectedHandler(event) {
     // This signals that the user was disconnected from the Session. Any subscribers and publishers
     // will automatically be removed. This default behaviour can be prevented using event.preventDefault()
     p2pPublisher = null;
+    jQuery("#p2pYou").html('');/*MQB20121120*/
+    jQuery("#p2pMe").html();/*MQB20121120*/
 }
 
 function p2pConnectionDestroyedHandler(event) {
-// This signals that connections were destroyed
+    // This signals that connections were destroyed
+    p2pPublisher = null; /*MQB20121120*/
+    jQuery("#p2pYou").html('');/*MQB20121120*/
+    jQuery("#p2pMe").html();/*MQB20121120*/
 }
 
 function p2pConnectionCreatedHandler(event) {

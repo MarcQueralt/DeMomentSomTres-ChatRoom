@@ -280,7 +280,7 @@ function p2pStartPublishing() {
             height: VIDEO_HEIGHT/5
         };
         p2pPublisher = TB.initPublisher(apiKey, publisherDiv.id, publisherProps);  // Pass the replacement div id and properties
-        p2pPublisher.setMicrophoneGain(75);
+        p2pPublisher.setMicrophoneGain(100);
         jQuery("#p2p").show();
     //        p2pSession.publish(p2pPublisher);
     }
@@ -291,6 +291,8 @@ function p2pStopPublishing() {
         p2pSession.unpublish(p2pPublisher);
     }
     p2pPublisher = null;
+    jQuery("#p2pYou").html('');/*MQB20121120*/
+    jQuery("#p2pMe").html();/*MQB20121120*/
 }
 
 // P2P EVENT HANDLERS
